@@ -1,2 +1,2 @@
-# pf9-nodeadm
+# nodeadm
 Kubernetes node administration tool
