@@ -116,17 +116,19 @@ func writeConfFiles() {
 func kubeadmInit(config string) {
 	currentPath := os.Getenv("PATH")
 	os.Setenv("PATH", currentPath+":"+rootDir)
+	log.Printf("Updated PATH variable = %s", os.Getenv("PATH"))
 	log.Printf("Running command %s %s %s", filepath.Join(rootDir, "kubeadm"), "init", "--config="+config)
+
 	cmd := exec.Command(filepath.Join(rootDir, "kubeadm"), "init", "--config="+config)
-	err := cmd.Run()
+	err := cmd.Start()
 	if err != nil {
 		log.Fatalf("Failed to run command %s with error %v\n", "kubeadm init", err)
 	}
-	output, err := cmd.CombinedOutput()
-	log.Println(string(output))
+	err = cmd.Wait()
 	if err != nil {
 		log.Fatalf("Failed to get output of command %s with error %v\n", "kubeadm init", err)
 	}
+
 }
 
 func download(fileName string, url string) {
