@@ -1,18 +1,16 @@
 package cmd
 
 import (
+	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 
+	"github.com/ghodss/yaml"
 	"github.com/platform9/nodeadm/utils"
 	"github.com/spf13/cobra"
-)
-
-const (
-	KUBERNETES_VERSION = "v1.9.6"
-	CNI_VERSION        = "v0.6.0"
+	kubeadm "k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm"
 )
 
 // nodeCmd represents the cluster command
@@ -20,10 +18,33 @@ var nodeCmdInit = &cobra.Command{
 	Use:   "init",
 	Short: "Initalize the master node with given configuration",
 	Run: func(cmd *cobra.Command, args []string) {
-		var rootDir = filepath.Join("/opt/bin/", KUBERNETES_VERSION)
-		utils.Install(KUBERNETES_VERSION, CNI_VERSION, rootDir)
-		kubeadmInit(cmd.Flag("cfg").Value.String(), rootDir)
+		var rootDir = filepath.Join(utils.BASE_DIR, utils.KUBERNETES_VERSION)
+		var confDir = filepath.Join(utils.BASE_DIR, utils.CONFIG_DIR)
+		utils.Install(utils.KUBERNETES_VERSION, utils.CNI_VERSION, rootDir)
+		cfgFile := cmd.Flag("cfg").Value.String()
+		kubeadmInit(cfgFile, rootDir)
+		networkInit(confDir, cfgFile, rootDir, utils.FLANNEL_VERSION)
 	},
+}
+
+func networkInit(confDir, cfgFile, rootDir, flannelVersion string) {
+	os.MkdirAll(confDir, utils.FILE_MODE)
+	url := fmt.Sprintf("https://raw.githubusercontent.com/coreos/flannel/%s/Documentation/kube-flannel.yml", flannelVersion)
+	file := filepath.Join(confDir, "flannel.yaml")
+	utils.Download(file, url, utils.FILE_MODE)
+	log.Printf("Pod network %s\n", getPodSubnet(cfgFile))
+	utils.ReplaceString(file, utils.DEFAULT_POD_NETWORK, getPodSubnet(cfgFile))
+	utils.Run(rootDir, "kubectl", "--kubeconfig="+"/etc/kubernetes/admin.conf", "apply", "-f", file)
+}
+
+func getPodSubnet(file string) string {
+	bytes, err := ioutil.ReadFile(file)
+	if err != nil {
+		log.Fatalf("Failed to read file %s with error %v\n", file, err)
+	}
+	masterConfig := kubeadm.MasterConfiguration{}
+	yaml.Unmarshal(bytes, &masterConfig)
+	return masterConfig.Networking.PodSubnet
 }
 
 /*
@@ -49,21 +70,7 @@ func writeConfFiles() {
 */
 
 func kubeadmInit(config, rootDir string) {
-	currentPath := os.Getenv("PATH")
-	os.Setenv("PATH", currentPath+":"+rootDir)
-	log.Printf("Updated PATH variable = %s", os.Getenv("PATH"))
-	log.Printf("Running command %s %s %s", filepath.Join(rootDir, "kubeadm"), "init", "--config="+config)
-
-	cmd := exec.Command(filepath.Join(rootDir, "kubeadm"), "init", "--config="+config)
-	err := cmd.Start()
-	if err != nil {
-		log.Fatalf("Failed to run command %s with error %v\n", "kubeadm init", err)
-	}
-	err = cmd.Wait()
-	if err != nil {
-		log.Fatalf("Failed to get output of command %s with error %v\n", "kubeadm init", err)
-	}
-
+	utils.Run(rootDir, "kubeadm", "init", "--config="+config)
 }
 
 func init() {
