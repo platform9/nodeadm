@@ -6,6 +6,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+
+	kubeadm "k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm/v1alpha1"
 )
 
 const (
@@ -13,10 +15,13 @@ const (
 	ETC_DIR   = "/etc/systemd/system"
 )
 
-func Install(kubernetesVersion, cniVersion, rootDir string) {
+func Install(kubernetesVersion, cniVersion, rootDir string, masterConfig *kubeadm.MasterConfiguration) {
 	downloadArtifacts(rootDir, kubernetesVersion, cniVersion)
 	writeKubeletServiceFiles(rootDir, kubernetesVersion)
 	EnableAndStartService("kubelet.service")
+	if masterConfig != nil {
+		ReplaceString(getKubeletServiceConf(), DEFAULT_DNS_IP, GetIPFromSubnet(masterConfig.Networking.ServiceSubnet, 10))
+	}
 }
 
 func writeKubeletServiceFiles(rootDir string, kuberneteVersion string) {
@@ -34,6 +39,10 @@ func writeKubeletServiceFiles(rootDir string, kuberneteVersion string) {
 	confFile := filepath.Join(ETC_DIR, "kubelet.service.d", "10-kubeadm.conf")
 	Download(confFile, baseURL+"10-kubeadm.conf", FILE_MODE)
 	ReplaceString(confFile, "/usr/bin", rootDir)
+}
+
+func getKubeletServiceConf() string {
+	return filepath.Join(ETC_DIR, "kubelet.service.d", "10-kubeadm.conf")
 }
 
 func downloadArtifacts(rootDir, kuberneteVersion, cniVersion string) {

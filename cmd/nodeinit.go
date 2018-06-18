@@ -10,7 +10,7 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/platform9/nodeadm/utils"
 	"github.com/spf13/cobra"
-	kubeadm "k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm"
+	kubeadm "k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm/v1alpha1"
 )
 
 // nodeCmd represents the cluster command
@@ -18,33 +18,43 @@ var nodeCmdInit = &cobra.Command{
 	Use:   "init",
 	Short: "Initalize the master node with given configuration",
 	Run: func(cmd *cobra.Command, args []string) {
-		var rootDir = filepath.Join(utils.BASE_DIR, utils.KUBERNETES_VERSION)
-		var confDir = filepath.Join(utils.BASE_DIR, utils.CONFIG_DIR)
-		utils.Install(utils.KUBERNETES_VERSION, utils.CNI_VERSION, rootDir)
-		cfgFile := cmd.Flag("cfg").Value.String()
-		kubeadmInit(cfgFile, rootDir)
-		networkInit(confDir, cfgFile, rootDir, utils.FLANNEL_VERSION)
+		rootDir := filepath.Join(utils.BASE_DIR, utils.KUBERNETES_VERSION)
+		confDir := filepath.Join(utils.BASE_DIR, utils.CONFIG_DIR)
+		file := cmd.Flag("cfg").Value.String()
+		bytes, err := ioutil.ReadFile(file)
+		if err != nil {
+			log.Fatalf("Failed to read file %s with error %v\n", file, err)
+		}
+		masterConfig := kubeadm.MasterConfiguration{}
+		yaml.Unmarshal(bytes, &masterConfig)
+		masterConfig.KubernetesVersion = utils.KUBERNETES_VERSION
+		/*
+			kubeadm.SetDefaults_MasterConfiguration(&masterConfig)
+			masterConfig.KubeletConfiguration.BaseConfig.ClusterDNS = []string{utils.GetIPFromSubnet(masterConfig.Networking.ServiceSubnet, 10)}
+			bytes, err = yaml.Marshal(masterConfig)
+			if err != nil {
+				log.Fatalf("Failed to marshal master config with err %v\n", err)
+			}
+			err = ioutil.WriteFile(file, bytes, utils.FILE_MODE)
+			if err != nil {
+				log.Fatalf("Failed to write file %s with error %v\n", file, err)
+			}
+		*/
+		utils.Install(utils.KUBERNETES_VERSION, utils.CNI_VERSION, rootDir, &masterConfig)
+		kubeadmInit(file, rootDir)
+		networkInit(confDir, cfgFile, rootDir, utils.FLANNEL_VERSION, masterConfig)
 	},
 }
 
-func networkInit(confDir, cfgFile, rootDir, flannelVersion string) {
+func networkInit(confDir, cfgFile, rootDir, flannelVersion string, masterConfig kubeadm.MasterConfiguration) {
 	os.MkdirAll(confDir, utils.FILE_MODE)
 	url := fmt.Sprintf("https://raw.githubusercontent.com/coreos/flannel/%s/Documentation/kube-flannel.yml", flannelVersion)
 	file := filepath.Join(confDir, "flannel.yaml")
 	utils.Download(file, url, utils.FILE_MODE)
-	log.Printf("Pod network %s\n", getPodSubnet(cfgFile))
-	utils.ReplaceString(file, utils.DEFAULT_POD_NETWORK, getPodSubnet(cfgFile))
+	log.Printf("Pod network %s\n", masterConfig.Networking.PodSubnet)
+	utils.ReplaceString(file, utils.DEFAULT_POD_NETWORK, masterConfig.Networking.PodSubnet)
+	utils.Run(rootDir, "sysctl", "net.bridge.bridge-nf-call-iptables=1")
 	utils.Run(rootDir, "kubectl", "--kubeconfig="+"/etc/kubernetes/admin.conf", "apply", "-f", file)
-}
-
-func getPodSubnet(file string) string {
-	bytes, err := ioutil.ReadFile(file)
-	if err != nil {
-		log.Fatalf("Failed to read file %s with error %v\n", file, err)
-	}
-	masterConfig := kubeadm.MasterConfiguration{}
-	yaml.Unmarshal(bytes, &masterConfig)
-	return masterConfig.Networking.PodSubnet
 }
 
 /*
