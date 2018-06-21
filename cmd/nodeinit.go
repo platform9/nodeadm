@@ -40,7 +40,10 @@ var nodeCmdInit = &cobra.Command{
 				log.Fatalf("Failed to write file %s with error %v\n", file, err)
 			}
 		*/
-		utils.Install(utils.KUBERNETES_VERSION, utils.CNI_VERSION, rootDir, &masterConfig)
+		routerId := cmd.Flag("routerId").Value.String()
+		intf := cmd.Flag("interface").Value.String()
+		vip := cmd.Flag("vip").Value.String()
+		utils.InstallMasterComponents(rootDir, routerId, intf, vip, &masterConfig)
 		kubeadmInit(file, rootDir)
 		networkInit(confDir, cfgFile, rootDir, utils.FLANNEL_VERSION, masterConfig)
 	},
@@ -87,4 +90,6 @@ func init() {
 	rootCmd.AddCommand(nodeCmdInit)
 	nodeCmdInit.Flags().String("cfg", "", "Location of configuration file")
 	nodeCmdInit.Flags().String("vip", "192.168.10.5", "VIP ip to be used for multi master setup")
+	nodeCmdInit.Flags().String("routerId", "42", "id of router to be used for keepalived")
+	nodeCmdInit.Flags().String("interface", "eth0", "interface used for keepalived")
 }

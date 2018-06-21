@@ -13,7 +13,7 @@ var nodeCmdJoin = &cobra.Command{
 	Short: "Initalize the worker node with given configuration",
 	Run: func(cmd *cobra.Command, args []string) {
 		var rootDir = filepath.Join(utils.BASE_DIR, utils.KUBERNETES_VERSION)
-		utils.Install(utils.KUBERNETES_VERSION, utils.CNI_VERSION, rootDir, nil)
+		utils.InstallWorkerComponents(rootDir)
 		kubeadmJoin(cmd.Flag("token").Value.String(),
 			cmd.Flag("master").Value.String(),
 			cmd.Flag("cahash").Value.String(), rootDir)
