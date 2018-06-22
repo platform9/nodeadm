@@ -3,7 +3,6 @@ package utils
 import (
 	"bufio"
 	"fmt"
-	"html/template"
 	"log"
 	"os"
 	"path/filepath"
