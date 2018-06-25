@@ -26,11 +26,11 @@ func kubeadmReset(rootDir string) {
 //TODO needs improvement
 func cleanup(rootDir string) {
 	os.RemoveAll(rootDir)
-	os.RemoveAll(filepath.Join(utils.ETC_DIR, "kubelet.service"))
-	os.RemoveAll(filepath.Join(utils.ETC_DIR, "kubelet.service.d"))
+	os.RemoveAll(filepath.Join(utils.SYSTEMD_DIR, "kubelet.service"))
+	os.RemoveAll(filepath.Join(utils.SYSTEMD_DIR, "kubelet.service.d"))
 	utils.StopAndDisableService("keepalived.service")
-	os.RemoveAll(filepath.Join(utils.ETC_DIR, "keepalived.service"))
-	os.RemoveAll(filepath.Join(utils.ETC_DIR, "keepalived.service.d"))
+	os.RemoveAll(filepath.Join(utils.SYSTEMD_DIR, "keepalived.service"))
+	os.RemoveAll(filepath.Join(utils.SYSTEMD_DIR, "keepalived.service.d"))
 	os.RemoveAll("/opt/cni")
 }
 

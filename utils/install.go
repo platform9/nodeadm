@@ -3,22 +3,20 @@ package utils
 import (
 	"bufio"
 	"fmt"
+	kubeadm "k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm/v1alpha1"
 	"log"
 	"os"
 	"path/filepath"
 	"text/template"
-
-	kubeadm "k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm/v1alpha1"
 )
 
 const (
 	FILE_MODE = 0744
-	ETC_DIR   = "/etc/systemd/system"
 )
 
 func InstallMasterComponents(rootDir, routerID, intf, vip string, masterConfig *kubeadm.MasterConfiguration) {
 	DownloadArtifacts(rootDir, KUBERNETES_VERSION, CNI_VERSION)
-	writeKubeletServiceFiles(rootDir, KUBERNETES_VERSION)
+	DownloadKubeletServiceFiles(rootDir, KUBERNETES_VERSION)
 	EnableAndStartService("kubelet.service")
 	ReplaceString(getKubeletServiceConf(), DEFAULT_DNS_IP, GetIPFromSubnet(masterConfig.Networking.ServiceSubnet, 10))
 	writeKeepAlivedServiceFiles(routerID, intf, vip)
@@ -27,23 +25,23 @@ func InstallMasterComponents(rootDir, routerID, intf, vip string, masterConfig *
 
 func InstallWorkerComponents(rootDir string) {
 	DownloadArtifacts(rootDir, KUBERNETES_VERSION, CNI_VERSION)
-	writeKubeletServiceFiles(rootDir, KUBERNETES_VERSION)
+	DownloadKubeletServiceFiles(rootDir, KUBERNETES_VERSION)
 	EnableAndStartService("kubelet.service")
 }
 
-func writeKubeletServiceFiles(rootDir string, kuberneteVersion string) {
+func DownloadKubeletServiceFiles(rootDir string, kuberneteVersion string) {
 	baseURL := fmt.Sprintf("https://raw.githubusercontent.com/kubernetes/kubernetes/%s/build/debs/", kuberneteVersion)
 	//kubelet service
-	serviceFile := filepath.Join(ETC_DIR, "kubelet.service")
+	serviceFile := filepath.Join(SYSTEMD_DIR, "kubelet.service")
 	Download(serviceFile, baseURL+"kubelet.service", FILE_MODE)
 	ReplaceString(serviceFile, "/usr/bin", rootDir)
 
 	//kubelet service conf
-	err := os.MkdirAll(filepath.Join(ETC_DIR, "kubelet.service.d"), FILE_MODE)
+	err := os.MkdirAll(filepath.Join(SYSTEMD_DIR, "kubelet.service.d"), FILE_MODE)
 	if err != nil {
 		log.Fatalf("Failed to create dir with error %v\n", err)
 	}
-	confFile := filepath.Join(ETC_DIR, "kubelet.service.d", "10-kubeadm.conf")
+	confFile := filepath.Join(SYSTEMD_DIR, "kubelet.service.d", "10-kubeadm.conf")
 	Download(confFile, baseURL+"10-kubeadm.conf", FILE_MODE)
 	ReplaceString(confFile, "/usr/bin", rootDir)
 }
@@ -85,7 +83,7 @@ func writeKeepAlivedServiceFiles(routerID, intf, vip string) {
 		RouterID, Intf, VIP string
 	}
 	kaConfData := KaConfData{routerID, intf, vip}
-	confFile := filepath.Join(ETC_DIR, "keepalive.service.d", "keepalived.conf")
+	confFile := filepath.Join(SYSTEMD_DIR, "keepalive.service.d", "keepalived.conf")
 	writeTemplateIntoFile(kaConfFileTemplate, "vipConfFileTemplate", confFile, kaConfData)
 
 	kaSvcFileTemplate := `
@@ -110,11 +108,11 @@ func writeKeepAlivedServiceFiles(routerID, intf, vip string) {
 		ConfigFile, KeepAlivedImg string
 	}
 	kaServiceData := KaServiceData{confFile, KEEPALIVED_IMG}
-	writeTemplateIntoFile(kaSvcFileTemplate, "kaSvcFileTemplate", filepath.Join(ETC_DIR, "keepalived.service"), kaServiceData)
+	writeTemplateIntoFile(kaSvcFileTemplate, "kaSvcFileTemplate", filepath.Join(SYSTEMD_DIR, "keepalived.service"), kaServiceData)
 }
 
 func getKubeletServiceConf() string {
-	return filepath.Join(ETC_DIR, "kubelet.service.d", "10-kubeadm.conf")
+	return filepath.Join(SYSTEMD_DIR, "kubelet.service.d", "10-kubeadm.conf")
 }
 
 func DownloadKubeComponents(rootDir, version string) {
@@ -144,8 +142,7 @@ func DownloadCNIPlugin(rootDir, version string) {
 
 func DownloadArtifacts(rootDir, kubernetesVersion, cniVersion string) {
 	DownloadKubeComponents(rootDir, kubernetesVersion)
-	DownloadCNIPlugin("/opt/cni/bin", cniVersion)
-
+	DownloadCNIPlugin(CNI_BASE_DIR, cniVersion)
 	//keepalived
 	Run(rootDir, "docker", "pull", KEEPALIVED_IMG)
 }

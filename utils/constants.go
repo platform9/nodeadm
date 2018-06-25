@@ -4,6 +4,8 @@ const (
 	KUBERNETES_VERSION  = "v1.10.4"
 	CNI_VERSION         = "v0.6.0"
 	BASE_DIR            = "/opt/bin"
+	CNI_BASE_DIR        = "/opt/cni/bin"
+	SYSTEMD_DIR         = "/etc/systemd/system"
 	CONFIG_DIR          = "conf"
 	FLANNEL_VERSION     = "v0.10.0"
 	DEFAULT_POD_NETWORK = "10.244.0.0/16"
