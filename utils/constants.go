@@ -1,7 +1,7 @@
 package utils
 
 const (
-	KUBERNETES_VERSION  = "v1.9.6"
+	KUBERNETES_VERSION  = "v1.10.4"
 	CNI_VERSION         = "v0.6.0"
 	BASE_DIR            = "/opt/bin"
 	CONFIG_DIR          = "conf"
