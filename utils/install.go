@@ -144,7 +144,7 @@ func DownloadCNIPlugin(rootDir, version string) {
 
 func DownloadArtifacts(rootDir, kubernetesVersion, cniVersion string) {
 	DownloadKubeComponents(rootDir, kubernetesVersion)
-	DownloadCNIPlugin(rootDir, cniVersion)
+	DownloadCNIPlugin("/opt/cni/bin", cniVersion)
 
 	//keepalived
 	Run(rootDir, "docker", "pull", KEEPALIVED_IMG)
