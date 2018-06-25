@@ -8,7 +8,7 @@ import (
 	"log"
 )
 
-var kube, cni bool
+var kube, cni, overwriteSymlink bool
 var downloadDir string
 
 // nodeCmd represents the cluster command
@@ -28,12 +28,12 @@ var downloadCmd = &cobra.Command{
 
 		if kube {
 			utils.DownloadKubeComponents(kubeDir, utils.KUBERNETES_VERSION)
-			utils.CreateSymLinks(kubeDir, kubeRootDir)
+			utils.CreateSymLinks(kubeDir, kubeRootDir, overwriteSymlink)
 		}
 
 		if cni {
 			utils.DownloadCNIPlugin(cniDir, utils.CNI_VERSION)
-			utils.CreateSymLinks(cniDir, cniRootDir)
+			utils.CreateSymLinks(cniDir, cniRootDir, overwriteSymlink)
 		}
 
 	},
@@ -43,5 +43,6 @@ func init() {
 	rootCmd.AddCommand(downloadCmd)
 	downloadCmd.Flags().BoolVar(&kube, "kube", true, "Download Kubernetes components")
 	downloadCmd.Flags().BoolVar(&cni, "cni", true, "Download CNI plugin")
+	downloadCmd.Flags().BoolVar(&overwriteSymlink, "overwriteSymlink", false, "Overwrite the symlinks")
 	downloadCmd.Flags().StringVar(&downloadDir, "downloadDir", "/opt", "Destination directory")
 }

@@ -8,7 +8,7 @@ import (
 )
 
 // Create symlinks of all the files inside sourceDir to targetDir
-func CreateSymLinks(sourceDir, targetDir string) {
+func CreateSymLinks(sourceDir, targetDir string, overwriteSymlinks bool) {
 	files, err := ioutil.ReadDir(sourceDir)
 	if err != nil {
 		log.Fatal(err)
@@ -17,9 +17,16 @@ func CreateSymLinks(sourceDir, targetDir string) {
 
 	for _, f := range files {
 		log.Print("Creating symlink for " + f.Name())
-		log.Println()
 
-		err = os.Symlink(filepath.Join(parentDir, f.Name()), filepath.Join(targetDir, f.Name()))
+		symlinkPath := filepath.Join(targetDir, f.Name())
+
+		if overwriteSymlinks {
+			if _, err := os.Lstat(symlinkPath); err == nil {
+				os.Remove(symlinkPath)
+			}
+		}
+
+		err = os.Symlink(filepath.Join(parentDir, f.Name()), symlinkPath)
 		if err != nil {
 			log.Fatal(err)
 		}
