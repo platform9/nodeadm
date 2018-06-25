@@ -2,8 +2,8 @@ package utils
 
 import (
 	"io/ioutil"
-	"os"
 	"log"
+	"os"
 	"path/filepath"
 )
 
@@ -13,10 +13,13 @@ func CreateSymLinks(sourceDir, targetDir string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	_, parentDir := filepath.Split(sourceDir)
 
 	for _, f := range files {
 		log.Print("Creating symlink for " + f.Name())
-		err = os.Symlink(filepath.Join(sourceDir,f.Name()), filepath.Join(targetDir,f.Name()))
+		log.Println()
+
+		err = os.Symlink(filepath.Join(parentDir, f.Name()), filepath.Join(targetDir, f.Name()))
 		if err != nil {
 			log.Fatal(err)
 		}

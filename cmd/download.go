@@ -5,7 +5,7 @@ import (
 
 	"github.com/platform9/nodeadm/utils"
 	"github.com/spf13/cobra"
-		"log"
+	"log"
 )
 
 var kube, cni bool
@@ -19,8 +19,8 @@ var downloadCmd = &cobra.Command{
 		var kubeRootDir = filepath.Join(downloadDir, "kubernetes")
 		var cniRootDir = filepath.Join(downloadDir, "cni")
 
-		var kubeDir = filepath.Join(kubeRootDir, "kubernetes-" + utils.KUBERNETES_VERSION)
-		var cniDir = filepath.Join(cniRootDir, "cni-" + utils.CNI_VERSION)
+		var kubeDir = filepath.Join(kubeRootDir, "kubernetes-"+utils.KUBERNETES_VERSION)
+		var cniDir = filepath.Join(cniRootDir, "cni-"+utils.CNI_VERSION)
 
 		if !kube && !cni {
 			log.Print("Please set which component to download")
@@ -28,12 +28,12 @@ var downloadCmd = &cobra.Command{
 
 		if kube {
 			utils.DownloadKubeComponents(kubeDir, utils.KUBERNETES_VERSION)
-			utils.CreateSymLinks(kubeDir, downloadDir)
+			utils.CreateSymLinks(kubeDir, kubeRootDir)
 		}
 
 		if cni {
 			utils.DownloadCNIPlugin(cniDir, utils.CNI_VERSION)
-			utils.CreateSymLinks(cniDir, downloadDir)
+			utils.CreateSymLinks(cniDir, cniRootDir)
 		}
 
 	},
@@ -41,7 +41,7 @@ var downloadCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(downloadCmd)
-	downloadCmd.Flags().BoolVar(&kube,"kube", true, "Download Kubernetes components")
-	downloadCmd.Flags().BoolVar(&cni,"cni", true, "Download CNI plugin")
-	downloadCmd.Flags().StringVar(&downloadDir,"downloadDir", "/opt", "Destination directory")
+	downloadCmd.Flags().BoolVar(&kube, "kube", true, "Download Kubernetes components")
+	downloadCmd.Flags().BoolVar(&cni, "cni", true, "Download CNI plugin")
+	downloadCmd.Flags().StringVar(&downloadDir, "downloadDir", "/opt", "Destination directory")
 }
