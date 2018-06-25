@@ -17,7 +17,7 @@ const (
 )
 
 func InstallMasterComponents(rootDir, routerID, intf, vip string, masterConfig *kubeadm.MasterConfiguration) {
-	downloadArtifacts(rootDir, KUBERNETES_VERSION, CNI_VERSION)
+	DownloadArtifacts(rootDir, KUBERNETES_VERSION, CNI_VERSION)
 	writeKubeletServiceFiles(rootDir, KUBERNETES_VERSION)
 	EnableAndStartService("kubelet.service")
 	ReplaceString(getKubeletServiceConf(), DEFAULT_DNS_IP, GetIPFromSubnet(masterConfig.Networking.ServiceSubnet, 10))
@@ -26,7 +26,7 @@ func InstallMasterComponents(rootDir, routerID, intf, vip string, masterConfig *
 }
 
 func InstallWorkerComponents(rootDir string) {
-	downloadArtifacts(rootDir, KUBERNETES_VERSION, CNI_VERSION)
+	DownloadArtifacts(rootDir, KUBERNETES_VERSION, CNI_VERSION)
 	writeKubeletServiceFiles(rootDir, KUBERNETES_VERSION)
 	EnableAndStartService("kubelet.service")
 }
@@ -117,28 +117,34 @@ func getKubeletServiceConf() string {
 	return filepath.Join(ETC_DIR, "kubelet.service.d", "10-kubeadm.conf")
 }
 
-func downloadArtifacts(rootDir, kuberneteVersion, cniVersion string) {
+func DownloadKubeComponents(rootDir, version string) {
 	err := os.MkdirAll(rootDir, FILE_MODE)
 	if err != nil {
 		log.Fatalf("Failed to create dir %s with error %v\n", rootDir, err)
 	}
 
 	//Download kubectl, kubeadm, kubelet if needed
-	baseURL := fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/%s/bin/linux/amd64/", kuberneteVersion)
+	baseURL := fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/%s/bin/linux/amd64/", version)
 	Download(filepath.Join(rootDir, "kubectl"), baseURL+"kubectl", FILE_MODE)
 	Download(filepath.Join(rootDir, "kubeadm"), baseURL+"kubeadm", FILE_MODE)
 	Download(filepath.Join(rootDir, "kubelet"), baseURL+"kubelet", FILE_MODE)
+}
 
-	//CNI
-	err = os.MkdirAll("/opt/cni/bin", FILE_MODE)
+func DownloadCNIPlugin(rootDir, version string) {
+	err := os.MkdirAll(rootDir, FILE_MODE)
 	if err != nil {
 		log.Fatalf("Failed to create dir %s with error %v\n", rootDir, err)
 	}
 
-	baseURL = fmt.Sprintf("https://github.com/containernetworking/plugins/releases/download/%s/cni-plugins-amd64-%s.tgz", cniVersion, cniVersion)
-	tmpFile := fmt.Sprintf("/tmp/cni-plugins-amd64-%s.tgz", cniVersion)
+	baseURL := fmt.Sprintf("https://github.com/containernetworking/plugins/releases/download/%s/cni-plugins-amd64-%s.tgz", version, version)
+	tmpFile := fmt.Sprintf("/tmp/cni-plugins-amd64-%s.tgz", version)
 	Download(tmpFile, baseURL, FILE_MODE)
-	Run(rootDir, "tar", "-xvf", tmpFile, "-C", "/opt/cni/bin")
+	Run(rootDir, "tar", "-xvf", tmpFile, "-C", rootDir)
+}
+
+func DownloadArtifacts(rootDir, kubernetesVersion, cniVersion string) {
+	DownloadKubeComponents(rootDir, kubernetesVersion)
+	DownloadCNIPlugin(rootDir, cniVersion)
 
 	//keepalived
 	Run(rootDir, "docker", "pull", KEEPALIVED_IMG)
