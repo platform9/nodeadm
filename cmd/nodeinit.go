@@ -1,10 +1,8 @@
 package cmd
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
-	"os"
 	"path/filepath"
 
 	"github.com/ghodss/yaml"
@@ -18,46 +16,46 @@ var nodeCmdInit = &cobra.Command{
 	Use:   "init",
 	Short: "Initalize the master node with given configuration",
 	Run: func(cmd *cobra.Command, args []string) {
-		rootDir := filepath.Join(utils.BASE_DIR, utils.KUBERNETES_VERSION)
-		confDir := filepath.Join(utils.BASE_DIR, utils.CONFIG_DIR)
-		file := cmd.Flag("cfg").Value.String()
-		bytes, err := ioutil.ReadFile(file)
-		if err != nil {
-			log.Fatalf("Failed to read file %s with error %v\n", file, err)
+		config := utils.Configuration{}
+		file := ""
+		if cmd.Flag("cfg") != nil {
+			file = cmd.Flag("cfg").Value.String()
+			bytes, err := ioutil.ReadFile(file)
+			if err != nil {
+				log.Fatalf("Failed to read file %s with error %v\n", file, err)
+			}
+			yaml.Unmarshal(bytes, &config)
+		} else {
+			tmpFile, err := ioutil.TempFile("", "nodeadm")
+			if err != nil {
+				log.Fatalf("Failed to create temp file with error %v", err)
+			}
+			file = tmpFile.Name()
 		}
-		masterConfig := kubeadm.MasterConfiguration{}
-		yaml.Unmarshal(bytes, &masterConfig)
-		masterConfig.KubernetesVersion = utils.KUBERNETES_VERSION
-		/*
-			kubeadm.SetDefaults_MasterConfiguration(&masterConfig)
-			masterConfig.KubeletConfiguration.BaseConfig.ClusterDNS = []string{utils.GetIPFromSubnet(masterConfig.Networking.ServiceSubnet, 10)}
-			bytes, err = yaml.Marshal(masterConfig)
-			if err != nil {
-				log.Fatalf("Failed to marshal master config with err %v\n", err)
-			}
-			err = ioutil.WriteFile(file, bytes, utils.FILE_MODE)
-			if err != nil {
-				log.Fatalf("Failed to write file %s with error %v\n", file, err)
-			}
-		*/
-		routerId := cmd.Flag("routerId").Value.String()
-		intf := cmd.Flag("interface").Value.String()
-		vip := cmd.Flag("vip").Value.String()
-		utils.InstallMasterComponents(rootDir, routerId, intf, vip, &masterConfig)
-		kubeadmInit(file, rootDir)
-		networkInit(confDir, cfgFile, rootDir, utils.FLANNEL_VERSION, masterConfig)
+		config.MasterConfiguration.KubernetesVersion = utils.KUBERNETES_VERSION
+
+		kubeadm.SetDefaults_MasterConfiguration(&config.MasterConfiguration)
+		bytes, err := yaml.Marshal(config.MasterConfiguration)
+		if err != nil {
+			log.Fatalf("Failed to marshal master config with err %v\n", err)
+		}
+
+		err = ioutil.WriteFile(file, bytes, utils.FILE_MODE)
+		if err != nil {
+			log.Fatalf("Failed to write file %s with error %v\n", file, err)
+		}
+		utils.InstallMasterComponents(&config)
+		kubeadmInit(file)
+		networkInit(config)
 	},
 }
 
-func networkInit(confDir, cfgFile, rootDir, flannelVersion string, masterConfig kubeadm.MasterConfiguration) {
-	os.MkdirAll(confDir, utils.FILE_MODE)
-	url := fmt.Sprintf("https://raw.githubusercontent.com/coreos/flannel/%s/Documentation/kube-flannel.yml", flannelVersion)
-	file := filepath.Join(confDir, "flannel.yaml")
-	utils.Download(file, url, utils.FILE_MODE)
-	log.Printf("Pod network %s\n", masterConfig.Networking.PodSubnet)
-	utils.ReplaceString(file, utils.DEFAULT_POD_NETWORK, masterConfig.Networking.PodSubnet)
-	utils.Run(rootDir, "sysctl", "net.bridge.bridge-nf-call-iptables=1")
-	utils.Run(rootDir, "kubectl", "--kubeconfig="+"/etc/kubernetes/admin.conf", "apply", "-f", file)
+func networkInit(config utils.Configuration) {
+	file := filepath.Join(utils.CONF_DIR, "flannel.yaml")
+	log.Printf("Pod network %s\n", config.MasterConfiguration.Networking.PodSubnet)
+	utils.ReplaceString(file, utils.DEFAULT_POD_NETWORK, config.MasterConfiguration.Networking.PodSubnet)
+	utils.Run(utils.BASE_DIR, "sysctl", "net.bridge.bridge-nf-call-iptables=1")
+	utils.Run(utils.BASE_DIR, "kubectl", "--kubeconfig="+"/etc/kubernetes/admin.conf", "apply", "-f", file)
 }
 
 /*
@@ -82,14 +80,11 @@ func writeConfFiles() {
 }
 */
 
-func kubeadmInit(config, rootDir string) {
-	utils.Run(rootDir, "kubeadm", "init", "--config="+config)
+func kubeadmInit(config string) {
+	utils.Run(utils.BASE_DIR, "kubeadm", "init", "--config="+config)
 }
 
 func init() {
 	rootCmd.AddCommand(nodeCmdInit)
 	nodeCmdInit.Flags().String("cfg", "", "Location of configuration file")
-	nodeCmdInit.Flags().String("vip", "192.168.10.5", "VIP ip to be used for multi master setup")
-	nodeCmdInit.Flags().String("routerId", "42", "id of router to be used for keepalived")
-	nodeCmdInit.Flags().String("interface", "eth0", "interface used for keepalived")
 }

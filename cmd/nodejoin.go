@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"path/filepath"
-
 	"github.com/platform9/nodeadm/utils"
 	"github.com/spf13/cobra"
 )
@@ -12,16 +10,15 @@ var nodeCmdJoin = &cobra.Command{
 	Use:   "join",
 	Short: "Initalize the worker node with given configuration",
 	Run: func(cmd *cobra.Command, args []string) {
-		var rootDir = filepath.Join(utils.BASE_DIR, utils.KUBERNETES_VERSION)
-		utils.InstallWorkerComponents(rootDir)
+		utils.InstallWorkerComponents()
 		kubeadmJoin(cmd.Flag("token").Value.String(),
 			cmd.Flag("master").Value.String(),
-			cmd.Flag("cahash").Value.String(), rootDir)
+			cmd.Flag("cahash").Value.String())
 	},
 }
 
-func kubeadmJoin(token, master, cahash, rootDir string) {
-	utils.Run(rootDir, "kubeadm", "join", "--token", token, master, "--discovery-token-ca-cert-hash", cahash)
+func kubeadmJoin(token, master, cahash string) {
+	utils.Run(utils.BASE_DIR, "kubeadm", "join", "--token", token, master, "--discovery-token-ca-cert-hash", cahash)
 }
 
 func init() {
