@@ -14,8 +14,9 @@ const (
 	FLANNEL_VERSION     = "v0.10.0"
 	DEFAULT_POD_NETWORK = "10.244.0.0/16"
 	DEFAULT_DNS_IP      = "10.96.0.10"
-	KEEPALIVED_IMG      = "platform9/keepalived:v2.0.4"
 	DEFAULT_ROUTER_ID   = 42
+	K8S_IMG_VERSION     = "1.14.7"
+	KEEPALIVED_IMG      = "platform9/keepalived:v2.0.4"
 )
 
 var KUBE_DIR = filepath.Join(BASE_DIR, "kubernetes-"+KUBERNETES_VERSION)
