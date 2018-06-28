@@ -11,6 +11,7 @@ var DOCKER_IMAGES = []string{
 	fmt.Sprintf("k8s.gcr.io/k8s-dns-sidecar-amd64:%s", K8S_IMG_VERSION),
 	fmt.Sprintf("k8s.gcr.io/k8s-dns-kube-dns-amd64:%s", K8S_IMG_VERSION),
 	fmt.Sprintf("k8s.gcr.io/k8s-dns-dnsmasq-nanny-amd64:%s", K8S_IMG_VERSION),
+  "quay.io/coreos/flannel:v0.10.0-amd64",
 	"k8s.gcr.io/pause:3.0",
 	"metallb/speaker:master",
 	"metallb/controller:master",
