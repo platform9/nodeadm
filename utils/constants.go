@@ -16,7 +16,7 @@ const (
 	DEFAULT_DNS_IP      = "10.96.0.10"
 	DEFAULT_ROUTER_ID   = 42
 	KUBEADM_CONFIG      = "/tmp/kubeadm.yaml"
-	K8S_IMG_VERSION     = "1.14.7"
+	KUBE_DNS_VERSION    = "1.14.8"
 	KEEPALIVED_IMG      = "platform9/keepalived:v2.0.4"
 )
 
