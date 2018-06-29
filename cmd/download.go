@@ -7,7 +7,6 @@ import (
 
 var overwriteSymlink bool
 
-// nodeCmd represents the cluster command
 var downloadCmd = &cobra.Command{
 	Use:   "download",
 	Short: "Download components",
