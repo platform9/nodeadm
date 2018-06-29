@@ -16,6 +16,7 @@ const (
 	DEFAULT_DNS_IP      = "10.96.0.10"
 	KEEPALIVED_IMG      = "platform9/keepalived:v2.0.4"
 	DEFAULT_ROUTER_ID   = 42
+	KUBEADM_CONFIG      = "/tmp/kubeadm.yaml"
 )
 
 var KUBE_DIR = filepath.Join(BASE_DIR, "kubernetes-"+KUBERNETES_VERSION)

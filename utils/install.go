@@ -156,9 +156,12 @@ func DownloadCNIPlugin(rootDir, version string) {
 
 	baseURL := fmt.Sprintf("https://github.com/containernetworking/plugins/releases/download/%s/cni-plugins-amd64-%s.tgz", version, version)
 	tmpFile := fmt.Sprintf("/tmp/cni-plugins-amd64-%s.tgz", version)
-	Download(tmpFile, baseURL, FILE_MODE)
-	Run(rootDir, "tar", "-xvf", tmpFile, "-C", rootDir)
-	CreateSymLinks(CNI_DIR, CNI_BASE_DIR, true)
+	if _, err := os.Stat(CNI_DIR); os.IsNotExist(err) {
+		Download(tmpFile, baseURL, FILE_MODE)
+		Run(rootDir, "tar", "-xvf", tmpFile, "-C", rootDir)
+		CreateSymLinks(CNI_DIR, CNI_BASE_DIR, true)
+	}
+
 }
 
 func DownloadNetworkConfig() {

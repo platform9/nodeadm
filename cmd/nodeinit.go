@@ -40,12 +40,12 @@ var nodeCmdInit = &cobra.Command{
 			log.Fatalf("Failed to marshal master config with err %v\n", err)
 		}
 
-		err = ioutil.WriteFile(file, bytes, utils.FILE_MODE)
+		err = ioutil.WriteFile(utils.KUBEADM_CONFIG, bytes, utils.FILE_MODE)
 		if err != nil {
 			log.Fatalf("Failed to write file %s with error %v\n", file, err)
 		}
 		utils.InstallMasterComponents(&config)
-		kubeadmInit(file)
+		kubeadmInit(utils.KUBEADM_CONFIG)
 		networkInit(config)
 	},
 }
