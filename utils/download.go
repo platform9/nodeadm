@@ -23,14 +23,13 @@ func DownloadKubeComponents(rootDir, version string) {
 }
 
 func DownloadCNIPlugin(rootDir, version string) {
-	err := os.MkdirAll(rootDir, FILE_MODE)
-	if err != nil {
-		log.Fatalf("Failed to create dir %s with error %v\n", rootDir, err)
-	}
-
 	baseURL := fmt.Sprintf("https://github.com/containernetworking/plugins/releases/download/%s/cni-plugins-amd64-%s.tgz", version, version)
 	tmpFile := fmt.Sprintf("/tmp/cni-plugins-amd64-%s.tgz", version)
 	if _, err := os.Stat(CNI_DIR); os.IsNotExist(err) {
+		err := os.MkdirAll(rootDir, FILE_MODE)
+		if err != nil {
+			log.Fatalf("Failed to create dir %s with error %v\n", rootDir, err)
+		}
 		Download(tmpFile, baseURL, FILE_MODE)
 		Run(rootDir, "tar", "-xvf", tmpFile, "-C", rootDir)
 		CreateSymLinks(CNI_DIR, CNI_BASE_DIR, true)
