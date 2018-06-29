@@ -49,6 +49,9 @@ func DownloadArtifacts() {
 	DownloadCNIPlugin(CNI_DIR, CNI_VERSION)
 	DownloadKubeletServiceFiles(KUBERNETES_VERSION)
 	DownloadNetworkConfig()
+}
+
+func DownloadDockerImages() {
 	images := GetImages()
 	for _, image := range images {
 		Run("", "docker", "pull", image)
