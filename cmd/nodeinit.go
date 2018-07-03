@@ -18,7 +18,7 @@ var nodeCmdInit = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		config := utils.Configuration{}
 		file := ""
-		if cmd.Flag("cfg") != nil {
+		if len(cmd.Flag("cfg").Value.String()) > 0 {
 			file = cmd.Flag("cfg").Value.String()
 			bytes, err := ioutil.ReadFile(file)
 			if err != nil {
@@ -40,48 +40,32 @@ var nodeCmdInit = &cobra.Command{
 			log.Fatalf("Failed to marshal master config with err %v\n", err)
 		}
 
-		err = ioutil.WriteFile(utils.KUBEADM_CONFIG, bytes, utils.FILE_MODE)
+		err = ioutil.WriteFile(utils.KUBEADM_CONFIG, bytes, utils.READ)
 		if err != nil {
 			log.Fatalf("Failed to write file %s with error %v\n", file, err)
 		}
 		utils.InstallMasterComponents(&config)
 		kubeadmInit(utils.KUBEADM_CONFIG)
 		networkInit(config)
+		untaintMasters()
 	},
 }
 
 func networkInit(config utils.Configuration) {
-	file := filepath.Join(utils.CONF_DIR, "flannel.yaml")
+	file := filepath.Join(utils.CONF_INSTALL_DIR, "flannel.yaml")
 	log.Printf("Pod network %s\n", config.MasterConfiguration.Networking.PodSubnet)
 	utils.ReplaceString(file, utils.DEFAULT_POD_NETWORK, config.MasterConfiguration.Networking.PodSubnet)
-	utils.Run(utils.BASE_DIR, "sysctl", "net.bridge.bridge-nf-call-iptables=1")
-	utils.Run(utils.BASE_DIR, "kubectl", "--kubeconfig="+"/etc/kubernetes/admin.conf", "apply", "-f", file)
+	utils.Run(utils.BASE_INSTALL_DIR, "sysctl", "net.bridge.bridge-nf-call-iptables=1")
+	utils.Run(utils.BASE_INSTALL_DIR, "kubectl", "--kubeconfig="+"/etc/kubernetes/admin.conf", "apply", "-f", file)
 }
-
-/*
-func writeConfFiles() {
-	masterConfig := kubeadm.MasterConfiguration{}
-	masterConfig.ClusterName = "test"
-	masterConfig.Networking.PodSubnet = "10.1.0.0/16"
-	masterConfig.Networking.ServiceSubnet = "10.2.0.0/16"
-	masterConfig.API.AdvertiseAddress = ""
-	masterConfig.API.BindPort = 443
-	masterConfig.API.ControlPlaneEndpoint = ""
-	masterConfig.APIServerCertSANs = []string{"10.2.1.2"}
-	masterConfig.Token = "token"
-	masterConfig.CertificatesDir = "/tmp/certs"
-	masterConfig.Etcd.Endpoints = []string{"http://127.0.0.1:2379"}
-	y, err := yaml.Marshal(masterConfig)
-	if err != nil {
-		log.Fatalf("Could not serialize master configuration object")
-	}
-	ioutil.WriteFile("/tmp/config", y, 0644)
-
-}
-*/
 
 func kubeadmInit(config string) {
-	utils.Run(utils.BASE_DIR, "kubeadm", "init", "--config="+config)
+	utils.Run(utils.BASE_INSTALL_DIR, "kubeadm", "init", "--config="+config)
+}
+
+func untaintMasters() {
+	utils.Run(utils.BASE_INSTALL_DIR, "kubectl", "--kubeconfig="+"/etc/kubernetes/admin.conf", "taint", "nodes",
+		"--all", "node-role.kubernetes.io/master-")
 }
 
 func init() {

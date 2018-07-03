@@ -2,7 +2,6 @@ package utils
 
 import (
 	"bufio"
-	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -14,41 +13,27 @@ import (
 )
 
 const (
-	FILE_MODE = 0744
+	EXECUTE = 0744
+	READ    = 0644
 )
 
 func InstallMasterComponents(config *Configuration) {
-	DownloadArtifacts()
-	EnableAndStartService("kubelet.service")
+	PopulateCache()
+	PlaceComponentsFromCache()
 	ReplaceString(getKubeletServiceConf(), DEFAULT_DNS_IP, GetIPFromSubnet(config.MasterConfiguration.Networking.ServiceSubnet, 10))
+	EnableAndStartService("kubelet.service")
 	writeKeepAlivedServiceFiles(config.VipConfiguration)
 	EnableAndStartService("keepalived.service")
 }
 
 func InstallWorkerComponents() {
-	DownloadArtifacts()
+	PopulateCache()
+	PlaceComponentsFromCache()
 	EnableAndStartService("kubelet.service")
 }
 
-func DownloadKubeletServiceFiles(kuberneteVersion string) {
-	baseURL := fmt.Sprintf("https://raw.githubusercontent.com/kubernetes/kubernetes/%s/build/debs/", kuberneteVersion)
-	//kubelet service
-	serviceFile := filepath.Join(SYSTEMD_DIR, "kubelet.service")
-	Download(serviceFile, baseURL+"kubelet.service", FILE_MODE)
-	ReplaceString(serviceFile, "/usr/bin", BASE_DIR)
-
-	//kubelet service conf
-	err := os.MkdirAll(filepath.Join(SYSTEMD_DIR, "kubelet.service.d"), FILE_MODE)
-	if err != nil {
-		log.Fatalf("Failed to create dir with error %v\n", err)
-	}
-	confFile := filepath.Join(SYSTEMD_DIR, "kubelet.service.d", "10-kubeadm.conf")
-	Download(confFile, baseURL+"10-kubeadm.conf", FILE_MODE)
-	ReplaceString(confFile, "/usr/bin", BASE_DIR)
-}
-
 func writeTemplateIntoFile(tmpl, name, file string, data interface{}) {
-	err := os.MkdirAll(filepath.Dir(file), FILE_MODE)
+	err := os.MkdirAll(filepath.Dir(file), READ)
 	if err != nil {
 		log.Fatalf("Failed to create dirs for path %s with error %v\n", filepath.Dir(file), err)
 	}

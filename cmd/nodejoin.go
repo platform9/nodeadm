@@ -18,7 +18,7 @@ var nodeCmdJoin = &cobra.Command{
 }
 
 func kubeadmJoin(token, master, cahash string) {
-	utils.Run(utils.BASE_DIR, "kubeadm", "join", "--token", token, master, "--discovery-token-ca-cert-hash", cahash)
+	utils.Run(utils.BASE_INSTALL_DIR, "kubeadm", "join", "--token", token, master, "--discovery-token-ca-cert-hash", cahash)
 }
 
 func init() {

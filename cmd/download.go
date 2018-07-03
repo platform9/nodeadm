@@ -11,8 +11,7 @@ var downloadCmd = &cobra.Command{
 	Use:   "download",
 	Short: "Download components",
 	Run: func(cmd *cobra.Command, args []string) {
-		utils.DownloadArtifacts()
-		utils.DownloadDockerImages()
+		utils.PopulateCache()
 	},
 }
 

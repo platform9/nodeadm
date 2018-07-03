@@ -19,22 +19,35 @@ var nodeCmdReset = &cobra.Command{
 }
 
 func kubeadmReset() {
-	utils.Run(utils.BASE_DIR, "kubeadm", "reset")
+	utils.RunBestEffort(utils.BASE_INSTALL_DIR, "kubeadm", "reset")
 }
 
 //TODO needs improvement
 func cleanup() {
-	os.RemoveAll(utils.BASE_DIR)
-	os.RemoveAll(utils.CNI_BASE_DIR)
-	os.RemoveAll(utils.KUBE_DIR)
-	os.RemoveAll(utils.CNI_DIR)
-	os.RemoveAll(filepath.Join(utils.SYSTEMD_DIR, "kubelet.service"))
-	os.RemoveAll(filepath.Join(utils.SYSTEMD_DIR, "kubelet.service.d"))
 	utils.StopAndDisableService("keepalived.service")
 	os.RemoveAll(filepath.Join(utils.SYSTEMD_DIR, "keepalived.service"))
 	os.RemoveAll(filepath.Join(utils.SYSTEMD_DIR, "keepalived.conf"))
-	os.RemoveAll(filepath.Join(utils.SYSTEMD_DIR, "keepalived.service.d"))
-	os.RemoveAll("/opt/cni")
+
+	utils.StopAndDisableService("kubelet.service")
+	os.RemoveAll(filepath.Join(utils.SYSTEMD_DIR, "kubelet.service"))
+	os.RemoveAll(filepath.Join(utils.SYSTEMD_DIR, "kubelet.service.d"))
+
+	os.RemoveAll(filepath.Join(utils.BASE_INSTALL_DIR, "kubelet"))
+	os.RemoveAll(filepath.Join(utils.BASE_INSTALL_DIR, "kubeadm"))
+	os.RemoveAll(filepath.Join(utils.BASE_INSTALL_DIR, "kubectl"))
+
+	os.RemoveAll(utils.KUBE_VERSION_INSTALL_DIR)
+	os.RemoveAll(utils.CONF_INSTALL_DIR)
+	os.RemoveAll(utils.CNI_BASE_DIR)
+	os.RemoveAll("/etc/cni")
+
+	utils.RunBestEffort("", "ip", "link", "del", "cni0")
+	utils.RunBestEffort("", "ip", "link", "del", "flannel.1")
+
+	for _, image := range utils.GetImages() {
+		utils.RunBestEffort("", "docker", "rmi", "-f", image)
+	}
+
 }
 
 func init() {
