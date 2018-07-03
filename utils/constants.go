@@ -18,7 +18,7 @@ const (
 	KUBEADM_CONFIG      = "/tmp/kubeadm.yaml"
 	KUBE_DNS_VERSION    = "1.14.8"
 	KEEPALIVED_IMG      = "platform9/keepalived:v2.0.4"
-	CACHE_BASE_DIR      = "/var/cache/"
+	CACHE_BASE_DIR      = "/var/cache/nodeadm/"
 )
 
 var KUBE_DIR_NAME = "kubernetes-" + KUBERNETES_VERSION
@@ -29,5 +29,5 @@ var NODEADM_DIR_NAME = "noedadm-" + KUBERNETES_VERSION
 var KUBE_VERSION_INSTALL_DIR = filepath.Join(BASE_INSTALL_DIR, KUBE_DIR_NAME)
 var CNI_VERSION_INSTALL_DIR = filepath.Join(CNI_BASE_DIR, CNI_DIR_NAME)
 var CONF_INSTALL_DIR = filepath.Join(BASE_INSTALL_DIR, CONFIG_DIR)
-var CACHE_DIR = filepath.Join(CACHE_BASE_DIR, NODEADM_DIR_NAME)
+var CACHE_DIR = filepath.Join(CACHE_BASE_DIR, KUBERNETES_VERSION)
 var IMAGES_CACHE_DIR = filepath.Join(CACHE_DIR, "images")
