@@ -33,7 +33,7 @@ var nodeCmdInit = &cobra.Command{
 			file = tmpFile.Name()
 		}
 		config.MasterConfiguration.KubernetesVersion = utils.KUBERNETES_VERSION
-
+		config.MasterConfiguration.NoTaintMaster = true
 		kubeadm.SetDefaults_MasterConfiguration(&config.MasterConfiguration)
 		bytes, err := yaml.Marshal(config.MasterConfiguration)
 		if err != nil {
@@ -47,7 +47,6 @@ var nodeCmdInit = &cobra.Command{
 		utils.InstallMasterComponents(&config)
 		kubeadmInit(utils.KUBEADM_CONFIG)
 		networkInit(config)
-		untaintMasters()
 	},
 }
 
@@ -61,11 +60,6 @@ func networkInit(config utils.Configuration) {
 
 func kubeadmInit(config string) {
 	utils.Run(utils.BASE_INSTALL_DIR, "kubeadm", "init", "--config="+config)
-}
-
-func untaintMasters() {
-	utils.Run(utils.BASE_INSTALL_DIR, "kubectl", "--kubeconfig="+"/etc/kubernetes/admin.conf", "taint", "nodes",
-		"--all", "node-role.kubernetes.io/master-")
 }
 
 func init() {
