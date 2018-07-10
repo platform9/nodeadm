@@ -74,7 +74,7 @@ func writeKeepAlivedServiceFiles(config VIPConfiguration) {
 	kaConfFileTemplate :=
 		`vrrp_instance K8S_APISERVER {
 	interface {{.NetworkInterface}}
-	state MASTER
+	state BACKUP
 	virtual_router_id {{.RouterID}}
 	nopreempt
 	authentication {
