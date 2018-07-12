@@ -1,13 +1,12 @@
 package cmd
 
 import (
-	"log"
-	"os"
-	"path/filepath"
-
 	"github.com/platform9/nodeadm/constants"
 	"github.com/platform9/nodeadm/utils"
 	"github.com/spf13/cobra"
+	"log"
+	"os"
+	"path/filepath"
 )
 
 // nodeCmd represents the cluster command
@@ -42,6 +41,10 @@ func cleanupKubelet() {
 	utils.StopAndDisableService("kubelet.service")
 	os.RemoveAll(filepath.Join(constants.SYSTEMD_DIR, "kubelet.service"))
 	os.RemoveAll(filepath.Join(constants.SYSTEMD_DIR, "kubelet.service.d"))
+	err := utils.ResetFailedService("kubelet")
+	if err != nil {
+		log.Fatalf("Failed to reset failed kubelet service %v\n", err)
+	}
 }
 
 func cleanupBinaries() {
