@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"log"
 	"os"
 	"path/filepath"
 
@@ -13,25 +14,37 @@ var nodeCmdReset = &cobra.Command{
 	Use:   "reset",
 	Short: "Reset node to clean up all kubernetes install and configuration",
 	Run: func(cmd *cobra.Command, args []string) {
+		// TODO: Fail on first error instead of best effort cleanup
+		cleanupKeepalived()
 		kubeadmReset()
-		cleanup()
+		cleanupKubelet()
+		cleanupBinaries()
+		cleanupNetworking()
+		//cleanupDockerImages()
 	},
 }
 
 func kubeadmReset() {
+	log.Printf("[nodeadm:reset] Invoking kubeadm reset")
 	utils.RunBestEffort(utils.BASE_INSTALL_DIR, "kubeadm", "reset")
 }
 
-//TODO needs improvement
-func cleanup() {
+func cleanupKeepalived() {
+	log.Printf("[nodeadm:reset] Stopping & Removing Keepalived")
 	utils.StopAndDisableService("keepalived.service")
 	os.RemoveAll(filepath.Join(utils.SYSTEMD_DIR, "keepalived.service"))
 	os.RemoveAll(filepath.Join(utils.SYSTEMD_DIR, "keepalived.conf"))
+}
 
+func cleanupKubelet() {
+	log.Printf("[nodeadm:reset] Stopping & Removing kubelet")
 	utils.StopAndDisableService("kubelet.service")
 	os.RemoveAll(filepath.Join(utils.SYSTEMD_DIR, "kubelet.service"))
 	os.RemoveAll(filepath.Join(utils.SYSTEMD_DIR, "kubelet.service.d"))
+}
 
+func cleanupBinaries() {
+	log.Printf("[nodeadm:reset] Removing kubernetes binaries")
 	os.RemoveAll(filepath.Join(utils.BASE_INSTALL_DIR, "kubelet"))
 	os.RemoveAll(filepath.Join(utils.BASE_INSTALL_DIR, "kubeadm"))
 	os.RemoveAll(filepath.Join(utils.BASE_INSTALL_DIR, "kubectl"))
@@ -39,15 +52,20 @@ func cleanup() {
 	os.RemoveAll(utils.KUBE_VERSION_INSTALL_DIR)
 	os.RemoveAll(utils.CONF_INSTALL_DIR)
 	os.RemoveAll(utils.CNI_BASE_DIR)
-	os.RemoveAll("/etc/cni")
+}
 
+func cleanupNetworking() {
+	log.Printf("[nodeadm:reset] Removing flannel state files & resetting networking")
+	os.RemoveAll(utils.CNI_CONFIG_DIR)
+	os.RemoveAll(utils.CNI_STATE_DIR)
 	utils.RunBestEffort("", "ip", "link", "del", "cni0")
 	utils.RunBestEffort("", "ip", "link", "del", "flannel.1")
+}
 
+func cleanupDockerImages() {
 	for _, image := range utils.GetImages() {
 		utils.RunBestEffort("", "docker", "rmi", "-f", image)
 	}
-
 }
 
 func init() {

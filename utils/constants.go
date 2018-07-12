@@ -9,6 +9,8 @@ const (
 	CNI_VERSION         = "v0.6.0"
 	BASE_INSTALL_DIR    = "/opt/bin"
 	CNI_BASE_DIR        = "/opt/cni/bin"
+	CNI_CONFIG_DIR      = "/etc/cni"
+	CNI_STATE_DIR       = "/var/lib/cni"
 	SYSTEMD_DIR         = "/etc/systemd/system"
 	CONFIG_DIR          = "conf"
 	FLANNEL_VERSION     = "v0.10.0"
