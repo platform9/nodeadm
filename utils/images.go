@@ -8,10 +8,10 @@ import (
 
 var DOCKER_IMAGES = []string{
 	constants.KEEPALIVED_IMG,
-	fmt.Sprintf("k8s.gcr.io/kube-apiserver-amd64:%s", constants.CNI_DIR_NAME),
-	fmt.Sprintf("k8s.gcr.io/kube-controller-manager-amd64:%s", constants.CNI_DIR_NAME),
-	fmt.Sprintf("k8s.gcr.io/kube-scheduler-amd64:%s", constants.CNI_DIR_NAME),
-	fmt.Sprintf("k8s.gcr.io/kube-proxy-amd64:%s", constants.CNI_DIR_NAME),
+	fmt.Sprintf("k8s.gcr.io/kube-apiserver-amd64:%s", constants.KUBERNETES_VERSION),
+	fmt.Sprintf("k8s.gcr.io/kube-controller-manager-amd64:%s", constants.KUBERNETES_VERSION),
+	fmt.Sprintf("k8s.gcr.io/kube-scheduler-amd64:%s", constants.KUBERNETES_VERSION),
+	fmt.Sprintf("k8s.gcr.io/kube-proxy-amd64:%s", constants.KUBERNETES_VERSION),
 	fmt.Sprintf("k8s.gcr.io/k8s-dns-sidecar-amd64:%s", constants.KUBE_DNS_VERSION),
 	fmt.Sprintf("k8s.gcr.io/k8s-dns-kube-dns-amd64:%s", constants.KUBE_DNS_VERSION),
 	fmt.Sprintf("k8s.gcr.io/k8s-dns-dnsmasq-nanny-amd64:%s", constants.KUBE_DNS_VERSION),
