@@ -18,11 +18,11 @@ var nodeCmdInit = &cobra.Command{
 	Short: "Initalize the master node with given configuration",
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
-		config := &apis.NodeadmConfiguration{}
+		config := &apis.InitConfiguration{}
 
 		configPath := cmd.Flag("cfg").Value.String()
 		if len(configPath) != 0 {
-			config, err = utils.NodeadmConfigurationFromFile(configPath)
+			config, err = utils.InitConfigurationFromFile(configPath)
 			if err != nil {
 				log.Fatalf("Failed to read configuration from file %q: %v", configPath, err)
 			}
@@ -46,7 +46,7 @@ var nodeCmdInit = &cobra.Command{
 	},
 }
 
-func networkInit(config *apis.NodeadmConfiguration) {
+func networkInit(config *apis.InitConfiguration) {
 	file := filepath.Join(constants.CONF_INSTALL_DIR, "flannel.yaml")
 	log.Printf("Pod network %s\n", config.MasterConfiguration.Networking.PodSubnet)
 	utils.ReplaceString(file, constants.DEFAULT_POD_NETWORK, config.MasterConfiguration.Networking.PodSubnet)
