@@ -10,3 +10,4 @@ func SetInitDefaults(config *NodeadmConfiguration) {
 	config.MasterConfiguration.KubernetesVersion = constants.KUBERNETES_VERSION
 	config.MasterConfiguration.NoTaintMaster = true
 }
+

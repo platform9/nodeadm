@@ -19,7 +19,7 @@ func InstallMasterComponents(config *apis.NodeadmConfiguration) {
 	PlaceComponentsFromCache()
 	ReplaceString(getKubeletServiceConf(), constants.DEFAULT_DNS_IP, GetIPFromSubnet(config.MasterConfiguration.Networking.ServiceSubnet, 10))
 	EnableAndStartService("kubelet.service")
-	writeKeepAlivedServiceFiles(config.VipConfiguration)
+	writeKeepAlivedServiceFiles(config.VIPConfiguration)
 	EnableAndStartService("keepalived.service")
 }
 
