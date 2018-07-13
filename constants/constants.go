@@ -1,4 +1,4 @@
-package utils
+package constants
 
 import (
 	"path/filepath"
@@ -21,6 +21,8 @@ const (
 	KUBE_DNS_VERSION    = "1.14.8"
 	KEEPALIVED_IMG      = "platform9/keepalived:v2.0.4"
 	CACHE_BASE_DIR      = "/var/cache/nodeadm/"
+	EXECUTE             = 0744
+	READ                = 0644
 )
 
 var KUBE_DIR_NAME = "kubernetes-" + KUBERNETES_VERSION

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/platform9/nodeadm/constants"
 	"github.com/platform9/nodeadm/utils"
 	"github.com/spf13/cobra"
 )
@@ -18,7 +19,7 @@ var nodeCmdJoin = &cobra.Command{
 }
 
 func kubeadmJoin(token, master, cahash string) {
-	utils.Run(utils.BASE_INSTALL_DIR, "kubeadm", "join", "--token", token, master, "--discovery-token-ca-cert-hash", cahash)
+	utils.Run(constants.BASE_INSTALL_DIR, "kubeadm", "join", "--token", token, master, "--discovery-token-ca-cert-hash", cahash)
 }
 
 func init() {
