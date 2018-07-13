@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/ghodss/yaml"
+	"github.com/platform9/nodeadm/constants"
 	"github.com/platform9/nodeadm/utils"
 	"github.com/spf13/cobra"
 	kubeadm "k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm/v1alpha1"
@@ -32,7 +33,7 @@ var nodeCmdInit = &cobra.Command{
 			}
 			file = tmpFile.Name()
 		}
-		config.MasterConfiguration.KubernetesVersion = utils.KUBERNETES_VERSION
+		config.MasterConfiguration.KubernetesVersion = constants.KUBERNETES_VERSION
 		config.MasterConfiguration.NoTaintMaster = true
 		kubeadm.SetDefaults_MasterConfiguration(&config.MasterConfiguration)
 		bytes, err := yaml.Marshal(config.MasterConfiguration)
@@ -40,26 +41,26 @@ var nodeCmdInit = &cobra.Command{
 			log.Fatalf("Failed to marshal master config with err %v\n", err)
 		}
 
-		err = ioutil.WriteFile(utils.KUBEADM_CONFIG, bytes, utils.READ)
+		err = ioutil.WriteFile(constants.KUBEADM_CONFIG, bytes, constants.READ)
 		if err != nil {
 			log.Fatalf("Failed to write file %s with error %v\n", file, err)
 		}
 		utils.InstallMasterComponents(&config)
-		kubeadmInit(utils.KUBEADM_CONFIG)
+		kubeadmInit(constants.KUBEADM_CONFIG)
 		networkInit(config)
 	},
 }
 
 func networkInit(config utils.Configuration) {
-	file := filepath.Join(utils.CONF_INSTALL_DIR, "flannel.yaml")
+	file := filepath.Join(constants.CONF_INSTALL_DIR, "flannel.yaml")
 	log.Printf("Pod network %s\n", config.MasterConfiguration.Networking.PodSubnet)
-	utils.ReplaceString(file, utils.DEFAULT_POD_NETWORK, config.MasterConfiguration.Networking.PodSubnet)
-	utils.Run(utils.BASE_INSTALL_DIR, "sysctl", "net.bridge.bridge-nf-call-iptables=1")
-	utils.Run(utils.BASE_INSTALL_DIR, "kubectl", "--kubeconfig="+"/etc/kubernetes/admin.conf", "apply", "-f", file)
+	utils.ReplaceString(file, constants.DEFAULT_POD_NETWORK, config.MasterConfiguration.Networking.PodSubnet)
+	utils.Run(constants.BASE_INSTALL_DIR, "sysctl", "net.bridge.bridge-nf-call-iptables=1")
+	utils.Run(constants.BASE_INSTALL_DIR, "kubectl", "--kubeconfig="+"/etc/kubernetes/admin.conf", "apply", "-f", file)
 }
 
 func kubeadmInit(config string) {
-	utils.Run(utils.BASE_INSTALL_DIR, "kubeadm", "init", "--config="+config)
+	utils.Run(constants.BASE_INSTALL_DIR, "kubeadm", "init", "--config="+config)
 }
 
 func init() {

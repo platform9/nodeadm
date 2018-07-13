@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/platform9/nodeadm/constants"
 	"github.com/platform9/nodeadm/utils"
 	"github.com/spf13/cobra"
 )
@@ -26,38 +27,38 @@ var nodeCmdReset = &cobra.Command{
 
 func kubeadmReset() {
 	log.Printf("[nodeadm:reset] Invoking kubeadm reset")
-	utils.RunBestEffort(utils.BASE_INSTALL_DIR, "kubeadm", "reset")
+	utils.RunBestEffort(constants.BASE_INSTALL_DIR, "kubeadm", "reset")
 }
 
 func cleanupKeepalived() {
 	log.Printf("[nodeadm:reset] Stopping & Removing Keepalived")
 	utils.StopAndDisableService("keepalived.service")
-	os.RemoveAll(filepath.Join(utils.SYSTEMD_DIR, "keepalived.service"))
-	os.RemoveAll(filepath.Join(utils.SYSTEMD_DIR, "keepalived.conf"))
+	os.RemoveAll(filepath.Join(constants.SYSTEMD_DIR, "keepalived.service"))
+	os.RemoveAll(filepath.Join(constants.SYSTEMD_DIR, "keepalived.conf"))
 }
 
 func cleanupKubelet() {
 	log.Printf("[nodeadm:reset] Stopping & Removing kubelet")
 	utils.StopAndDisableService("kubelet.service")
-	os.RemoveAll(filepath.Join(utils.SYSTEMD_DIR, "kubelet.service"))
-	os.RemoveAll(filepath.Join(utils.SYSTEMD_DIR, "kubelet.service.d"))
+	os.RemoveAll(filepath.Join(constants.SYSTEMD_DIR, "kubelet.service"))
+	os.RemoveAll(filepath.Join(constants.SYSTEMD_DIR, "kubelet.service.d"))
 }
 
 func cleanupBinaries() {
 	log.Printf("[nodeadm:reset] Removing kubernetes binaries")
-	os.RemoveAll(filepath.Join(utils.BASE_INSTALL_DIR, "kubelet"))
-	os.RemoveAll(filepath.Join(utils.BASE_INSTALL_DIR, "kubeadm"))
-	os.RemoveAll(filepath.Join(utils.BASE_INSTALL_DIR, "kubectl"))
+	os.RemoveAll(filepath.Join(constants.BASE_INSTALL_DIR, "kubelet"))
+	os.RemoveAll(filepath.Join(constants.BASE_INSTALL_DIR, "kubeadm"))
+	os.RemoveAll(filepath.Join(constants.BASE_INSTALL_DIR, "kubectl"))
 
-	os.RemoveAll(utils.KUBE_VERSION_INSTALL_DIR)
-	os.RemoveAll(utils.CONF_INSTALL_DIR)
-	os.RemoveAll(utils.CNI_BASE_DIR)
+	os.RemoveAll(constants.KUBE_VERSION_INSTALL_DIR)
+	os.RemoveAll(constants.CONF_INSTALL_DIR)
+	os.RemoveAll(constants.CNI_BASE_DIR)
 }
 
 func cleanupNetworking() {
 	log.Printf("[nodeadm:reset] Removing flannel state files & resetting networking")
-	os.RemoveAll(utils.CNI_CONFIG_DIR)
-	os.RemoveAll(utils.CNI_STATE_DIR)
+	os.RemoveAll(constants.CNI_CONFIG_DIR)
+	os.RemoveAll(constants.CNI_STATE_DIR)
 	utils.RunBestEffort("", "ip", "link", "del", "cni0")
 	utils.RunBestEffort("", "ip", "link", "del", "flannel.1")
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
+	"github.com/platform9/nodeadm/constants"
 )
 
 type Artifact struct {
@@ -25,44 +26,44 @@ var NodeArtifact = []Artifact{
 	{
 		Name:     "kubeadm",
 		Type:     "executable",
-		Upstream: fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/%s/bin/linux/amd64/", KUBERNETES_VERSION),
-		Local:    filepath.Join(CACHE_DIR, KUBE_DIR_NAME),
+		Upstream: fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/%s/bin/linux/amd64/", constants.KUBERNETES_VERSION),
+		Local:    filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME),
 	},
 	{
 		Name:     "kubectl",
 		Type:     "executable",
-		Upstream: fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/%s/bin/linux/amd64/", KUBERNETES_VERSION),
-		Local:    filepath.Join(CACHE_DIR, KUBE_DIR_NAME),
+		Upstream: fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/%s/bin/linux/amd64/", constants.KUBERNETES_VERSION),
+		Local:    filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME),
 	},
 	{
 		Name:     "kubelet",
 		Type:     "executable",
-		Upstream: fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/%s/bin/linux/amd64/", KUBERNETES_VERSION),
-		Local:    filepath.Join(CACHE_DIR, KUBE_DIR_NAME),
+		Upstream: fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/%s/bin/linux/amd64/", constants.KUBERNETES_VERSION),
+		Local:    filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME),
 	},
 	{
 		Name:     "kubelet.service",
 		Type:     "regular",
-		Upstream: fmt.Sprintf("https://raw.githubusercontent.com/kubernetes/kubernetes/%s/build/debs/", KUBERNETES_VERSION),
-		Local:    filepath.Join(CACHE_DIR, KUBE_DIR_NAME),
+		Upstream: fmt.Sprintf("https://raw.githubusercontent.com/kubernetes/kubernetes/%s/build/debs/", constants.KUBERNETES_VERSION),
+		Local:    filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME),
 	},
 	{
 		Name:     "10-kubeadm.conf",
 		Type:     "regular",
-		Upstream: fmt.Sprintf("https://raw.githubusercontent.com/kubernetes/kubernetes/%s/build/debs/", KUBERNETES_VERSION),
-		Local:    filepath.Join(CACHE_DIR, KUBE_DIR_NAME),
+		Upstream: fmt.Sprintf("https://raw.githubusercontent.com/kubernetes/kubernetes/%s/build/debs/", constants.KUBERNETES_VERSION),
+		Local:    filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME),
 	},
 	{
-		Name:     fmt.Sprintf("cni-plugins-amd64-%s.tgz", CNI_VERSION),
+		Name:     fmt.Sprintf("cni-plugins-amd64-%s.tgz", constants.CNI_VERSION),
 		Type:     "regular",
-		Upstream: fmt.Sprintf("https://github.com/containernetworking/plugins/releases/download/%s/", CNI_VERSION),
-		Local:    filepath.Join(CACHE_DIR, CNI_DIR_NAME),
+		Upstream: fmt.Sprintf("https://github.com/containernetworking/plugins/releases/download/%s/", constants.CNI_VERSION),
+		Local:    filepath.Join(constants.CACHE_DIR, constants.CNI_DIR_NAME),
 	},
 	{
 		Name:     "kube-flannel.yml",
 		Type:     "regular",
-		Upstream: fmt.Sprintf("https://raw.githubusercontent.com/coreos/flannel/%s/Documentation/", FLANNEL_VERSION),
-		Local:    filepath.Join(CACHE_DIR, FLANNEL_DIR_NAME),
+		Upstream: fmt.Sprintf("https://raw.githubusercontent.com/coreos/flannel/%s/Documentation/", constants.FLANNEL_VERSION),
+		Local:    filepath.Join(constants.CACHE_DIR, constants.FLANNEL_DIR_NAME),
 	},
 }
 
@@ -75,58 +76,58 @@ func PlaceComponentsFromCache() {
 
 func placeKubeletServiceFiles() {
 	//kubelet service
-	serviceFile := filepath.Join(SYSTEMD_DIR, "kubelet.service")
-	Run("", "cp", filepath.Join(CACHE_DIR, KUBE_DIR_NAME, "kubelet.service"), serviceFile)
-	ReplaceString(serviceFile, "/usr/bin", BASE_INSTALL_DIR)
+	serviceFile := filepath.Join(constants.SYSTEMD_DIR, "kubelet.service")
+	Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME, "kubelet.service"), serviceFile)
+	ReplaceString(serviceFile, "/usr/bin", constants.BASE_INSTALL_DIR)
 
 	//kubelet service conf
-	err := os.MkdirAll(filepath.Join(SYSTEMD_DIR, "kubelet.service.d"), EXECUTE)
+	err := os.MkdirAll(filepath.Join(constants.SYSTEMD_DIR, "kubelet.service.d"), constants.EXECUTE)
 	if err != nil {
 		log.Fatalf("Failed to create dir with error %v\n", err)
 	}
-	confFile := filepath.Join(SYSTEMD_DIR, "kubelet.service.d", "10-kubeadm.conf")
-	Run("", "cp", filepath.Join(CACHE_DIR, KUBE_DIR_NAME, "10-kubeadm.conf"), confFile)
-	ReplaceString(confFile, "/usr/bin", BASE_INSTALL_DIR)
+	confFile := filepath.Join(constants.SYSTEMD_DIR, "kubelet.service.d", "10-kubeadm.conf")
+	Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME, "10-kubeadm.conf"), confFile)
+	ReplaceString(confFile, "/usr/bin", constants.BASE_INSTALL_DIR)
 }
 
 func placeKubeComponents() {
-	err := os.MkdirAll(KUBE_VERSION_INSTALL_DIR, EXECUTE)
+	err := os.MkdirAll(constants.KUBE_VERSION_INSTALL_DIR, constants.EXECUTE)
 	if err != nil {
-		log.Fatalf("Failed to create dir %s with error %v\n", KUBE_VERSION_INSTALL_DIR, err)
+		log.Fatalf("Failed to create dir %s with error %v\n", constants.KUBE_VERSION_INSTALL_DIR, err)
 	}
-	Run("", "cp", filepath.Join(CACHE_DIR, KUBE_DIR_NAME, "kubectl"), filepath.Join(KUBE_VERSION_INSTALL_DIR, "kubectl"))
-	Run("", "cp", filepath.Join(CACHE_DIR, KUBE_DIR_NAME, "kubeadm"), filepath.Join(KUBE_VERSION_INSTALL_DIR, "kubeadm"))
-	Run("", "cp", filepath.Join(CACHE_DIR, KUBE_DIR_NAME, "kubelet"), filepath.Join(KUBE_VERSION_INSTALL_DIR, "kubelet"))
-	CreateSymLinks(KUBE_VERSION_INSTALL_DIR, BASE_INSTALL_DIR, true)
+	Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME, "kubectl"), filepath.Join(constants.KUBE_VERSION_INSTALL_DIR, "kubectl"))
+	Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME, "kubeadm"), filepath.Join(constants.KUBE_VERSION_INSTALL_DIR, "kubeadm"))
+	Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME, "kubelet"), filepath.Join(constants.KUBE_VERSION_INSTALL_DIR, "kubelet"))
+	CreateSymLinks(constants.KUBE_VERSION_INSTALL_DIR, constants.BASE_INSTALL_DIR, true)
 }
 
 func placeCNIPlugin() {
-	tmpFile := fmt.Sprintf("cni-plugins-amd64-%s.tgz", CNI_VERSION)
-	Run("", "cp", filepath.Join(CACHE_DIR, CNI_DIR_NAME, tmpFile), filepath.Join("/tmp", tmpFile))
-	if _, err := os.Stat(CNI_VERSION_INSTALL_DIR); os.IsNotExist(err) {
-		err := os.MkdirAll(CNI_VERSION_INSTALL_DIR, EXECUTE)
+	tmpFile := fmt.Sprintf("cni-plugins-amd64-%s.tgz", constants.CNI_VERSION)
+	Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.CNI_DIR_NAME, tmpFile), filepath.Join("/tmp", tmpFile))
+	if _, err := os.Stat(constants.CNI_VERSION_INSTALL_DIR); os.IsNotExist(err) {
+		err := os.MkdirAll(constants.CNI_VERSION_INSTALL_DIR, constants.EXECUTE)
 		if err != nil {
-			log.Fatalf("Failed to create dir %s with error %v\n", CNI_VERSION_INSTALL_DIR, err)
+			log.Fatalf("Failed to create dir %s with error %v\n", constants.CNI_VERSION_INSTALL_DIR, err)
 		}
-		Run("", "tar", "-xvf", filepath.Join("/tmp", tmpFile), "-C", CNI_VERSION_INSTALL_DIR)
-		CreateSymLinks(CNI_VERSION_INSTALL_DIR, CNI_BASE_DIR, true)
+		Run("", "tar", "-xvf", filepath.Join("/tmp", tmpFile), "-C", constants.CNI_VERSION_INSTALL_DIR)
+		CreateSymLinks(constants.CNI_VERSION_INSTALL_DIR, constants.CNI_BASE_DIR, true)
 	}
 
 }
 
 func placeNetworkConfig() {
-	os.MkdirAll(CONF_INSTALL_DIR, EXECUTE)
-	Run("", "cp", filepath.Join(CACHE_DIR, FLANNEL_DIR_NAME, "kube-flannel.yml"), filepath.Join(CONF_INSTALL_DIR, "flannel.yaml"))
+	os.MkdirAll(constants.CONF_INSTALL_DIR, constants.EXECUTE)
+	Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.FLANNEL_DIR_NAME, "kube-flannel.yml"), filepath.Join(constants.CONF_INSTALL_DIR, "flannel.yaml"))
 }
 
 func loadAvailableImages(cli *client.Client) {
-	os.MkdirAll(IMAGES_CACHE_DIR, EXECUTE)
-	files, err := ioutil.ReadDir(IMAGES_CACHE_DIR)
+	os.MkdirAll(constants.IMAGES_CACHE_DIR, constants.EXECUTE)
+	files, err := ioutil.ReadDir(constants.IMAGES_CACHE_DIR)
 	if err != nil {
-		log.Printf("Failed to list files from dir %s skipping loading images with err %v\n", IMAGES_CACHE_DIR, err)
+		log.Printf("Failed to list files from dir %s skipping loading images with err %v\n", constants.IMAGES_CACHE_DIR, err)
 	}
 	for _, file := range files {
-		Run("", "docker", "load", "-i", filepath.Join(IMAGES_CACHE_DIR, file.Name()))
+		Run("", "docker", "load", "-i", filepath.Join(constants.IMAGES_CACHE_DIR, file.Name()))
 	}
 }
 
@@ -154,15 +155,15 @@ func PopulateCache() {
 		list, err = cli.ImageList(context.Background(), types.ImageListOptions{
 			Filters: nameFilter,
 		})
-		imageFile := filepath.Join(IMAGES_CACHE_DIR, strings.Replace(list[0].ID, "sha256:", "", -1)+".tar")
+		imageFile := filepath.Join(constants.IMAGES_CACHE_DIR, strings.Replace(list[0].ID, "sha256:", "", -1)+".tar")
 		Run("", "docker", "save", image, "-o", imageFile)
 	}
 	for _, file := range NodeArtifact {
-		mode := READ
+		mode := constants.READ
 		if file.Type == "executable" {
-			mode = EXECUTE
+			mode = constants.EXECUTE
 		}
-		os.MkdirAll(file.Local, EXECUTE)
+		os.MkdirAll(file.Local, constants.EXECUTE)
 		Download(filepath.Join(file.Local, file.Name), file.Upstream+file.Name, os.FileMode(mode))
 	}
 }

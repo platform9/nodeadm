@@ -9,18 +9,14 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/platform9/nodeadm/constants"
 	netutil "k8s.io/apimachinery/pkg/util/net"
-)
-
-const (
-	EXECUTE = 0744
-	READ    = 0644
 )
 
 func InstallMasterComponents(config *Configuration) {
 	PopulateCache()
 	PlaceComponentsFromCache()
-	ReplaceString(getKubeletServiceConf(), DEFAULT_DNS_IP, GetIPFromSubnet(config.MasterConfiguration.Networking.ServiceSubnet, 10))
+	ReplaceString(getKubeletServiceConf(), constants.DEFAULT_DNS_IP, GetIPFromSubnet(config.MasterConfiguration.Networking.ServiceSubnet, 10))
 	EnableAndStartService("kubelet.service")
 	writeKeepAlivedServiceFiles(config.VipConfiguration)
 	EnableAndStartService("keepalived.service")
@@ -33,7 +29,7 @@ func InstallWorkerComponents() {
 }
 
 func writeTemplateIntoFile(tmpl, name, file string, data interface{}) {
-	err := os.MkdirAll(filepath.Dir(file), READ)
+	err := os.MkdirAll(filepath.Dir(file), constants.READ)
 	if err != nil {
 		log.Fatalf("Failed to create dirs for path %s with error %v\n", filepath.Dir(file), err)
 	}
@@ -69,7 +65,7 @@ func writeKeepAlivedServiceFiles(config VIPConfiguration) {
 	}
 
 	if config.RouterID == 0 {
-		config.RouterID = DEFAULT_ROUTER_ID
+		config.RouterID = constants.DEFAULT_ROUTER_ID
 	}
 	kaConfFileTemplate :=
 		`vrrp_instance K8S_APISERVER {
@@ -86,7 +82,7 @@ func writeKeepAlivedServiceFiles(config VIPConfiguration) {
 	}
 }
 `
-	confFile := filepath.Join(SYSTEMD_DIR, "keepalived.conf")
+	confFile := filepath.Join(constants.SYSTEMD_DIR, "keepalived.conf")
 	writeTemplateIntoFile(kaConfFileTemplate, "vipConfFileTemplate", confFile, config)
 
 	kaSvcFileTemplate := `
@@ -110,10 +106,10 @@ WantedBy=multi-user.target
 	type KaServiceData struct {
 		ConfigFile, KeepAlivedImg string
 	}
-	kaServiceData := KaServiceData{confFile, KEEPALIVED_IMG}
-	writeTemplateIntoFile(kaSvcFileTemplate, "kaSvcFileTemplate", filepath.Join(SYSTEMD_DIR, "keepalived.service"), kaServiceData)
+	kaServiceData := KaServiceData{confFile, constants.KEEPALIVED_IMG}
+	writeTemplateIntoFile(kaSvcFileTemplate, "kaSvcFileTemplate", filepath.Join(constants.SYSTEMD_DIR, "keepalived.service"), kaServiceData)
 }
 
 func getKubeletServiceConf() string {
-	return filepath.Join(SYSTEMD_DIR, "kubelet.service.d", "10-kubeadm.conf")
+	return filepath.Join(constants.SYSTEMD_DIR, "kubelet.service.d", "10-kubeadm.conf")
 }
