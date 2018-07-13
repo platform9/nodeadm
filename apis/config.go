@@ -1,12 +1,12 @@
-package utils
+package apis
 
 import (
-	kubeadm "k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm/v1alpha1"
+	kubeadmv1 "k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm/v1alpha1"
 )
 
-type Configuration struct {
-	MasterConfiguration kubeadm.MasterConfiguration `json:"masterConfiguration"`
-	VipConfiguration    VIPConfiguration            `json:"vipConfiguration"`
+type NodeadmConfiguration struct {
+	MasterConfiguration kubeadmv1.MasterConfiguration `json:"masterConfiguration"`
+	VipConfiguration    VIPConfiguration              `json:"vipConfiguration"`
 }
 
 // VIPConfiguration specifies the parameters used to provision a virtual IP

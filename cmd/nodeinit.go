@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/ghodss/yaml"
+	"github.com/platform9/nodeadm/apis"
 	"github.com/platform9/nodeadm/constants"
 	"github.com/platform9/nodeadm/utils"
 	"github.com/spf13/cobra"
@@ -17,7 +18,7 @@ var nodeCmdInit = &cobra.Command{
 	Use:   "init",
 	Short: "Initalize the master node with given configuration",
 	Run: func(cmd *cobra.Command, args []string) {
-		config := utils.Configuration{}
+		config := apis.NodeadmConfiguration{}
 		file := ""
 		if len(cmd.Flag("cfg").Value.String()) > 0 {
 			file = cmd.Flag("cfg").Value.String()
@@ -51,7 +52,7 @@ var nodeCmdInit = &cobra.Command{
 	},
 }
 
-func networkInit(config utils.Configuration) {
+func networkInit(config apis.NodeadmConfiguration) {
 	file := filepath.Join(constants.CONF_INSTALL_DIR, "flannel.yaml")
 	log.Printf("Pod network %s\n", config.MasterConfiguration.Networking.PodSubnet)
 	utils.ReplaceString(file, constants.DEFAULT_POD_NETWORK, config.MasterConfiguration.Networking.PodSubnet)
