@@ -10,7 +10,6 @@ import (
 	"github.com/platform9/nodeadm/constants"
 	"github.com/platform9/nodeadm/utils"
 	"github.com/spf13/cobra"
-	kubeadm "k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm/v1alpha1"
 )
 
 // nodeCmd represents the cluster command
@@ -18,41 +17,36 @@ var nodeCmdInit = &cobra.Command{
 	Use:   "init",
 	Short: "Initalize the master node with given configuration",
 	Run: func(cmd *cobra.Command, args []string) {
-		config := apis.NodeadmConfiguration{}
-		file := ""
-		if len(cmd.Flag("cfg").Value.String()) > 0 {
-			file = cmd.Flag("cfg").Value.String()
-			bytes, err := ioutil.ReadFile(file)
+		var err error
+		config := &apis.NodeadmConfiguration{}
+
+		configPath := cmd.Flag("cfg").Value.String()
+		if len(configPath) != 0 {
+			config, err = utils.NodeadmConfigurationFromFile(configPath)
 			if err != nil {
-				log.Fatalf("Failed to read file %s with error %v\n", file, err)
+				log.Fatalf("Failed to read configuration from file %q: %v", configPath, err)
 			}
-			yaml.Unmarshal(bytes, &config)
-		} else {
-			tmpFile, err := ioutil.TempFile("", "nodeadm")
-			if err != nil {
-				log.Fatalf("Failed to create temp file with error %v", err)
-			}
-			file = tmpFile.Name()
 		}
-		config.MasterConfiguration.KubernetesVersion = constants.KUBERNETES_VERSION
-		config.MasterConfiguration.NoTaintMaster = true
-		kubeadm.SetDefaults_MasterConfiguration(&config.MasterConfiguration)
-		bytes, err := yaml.Marshal(config.MasterConfiguration)
+		apis.SetInitDefaults(config)
+
+		masterConfig, err := yaml.Marshal(config.MasterConfiguration)
 		if err != nil {
 			log.Fatalf("Failed to marshal master config with err %v\n", err)
 		}
-
-		err = ioutil.WriteFile(constants.KUBEADM_CONFIG, bytes, constants.READ)
+		err = ioutil.WriteFile(constants.KUBEADM_CONFIG, masterConfig, constants.READ)
 		if err != nil {
-			log.Fatalf("Failed to write file %s with error %v\n", file, err)
+			log.Fatalf("Failed to write file %q with error %v\n", constants.KUBEADM_CONFIG, err)
 		}
-		utils.InstallMasterComponents(&config)
+
+		utils.InstallMasterComponents(config)
+
 		kubeadmInit(constants.KUBEADM_CONFIG)
+
 		networkInit(config)
 	},
 }
 
-func networkInit(config apis.NodeadmConfiguration) {
+func networkInit(config *apis.NodeadmConfiguration) {
 	file := filepath.Join(constants.CONF_INSTALL_DIR, "flannel.yaml")
 	log.Printf("Pod network %s\n", config.MasterConfiguration.Networking.PodSubnet)
 	utils.ReplaceString(file, constants.DEFAULT_POD_NETWORK, config.MasterConfiguration.Networking.PodSubnet)
