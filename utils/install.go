@@ -14,7 +14,7 @@ import (
 	netutil "k8s.io/apimachinery/pkg/util/net"
 )
 
-func InstallMasterComponents(config *apis.NodeadmConfiguration) {
+func InstallMasterComponents(config *apis.InitConfiguration) {
 	PopulateCache()
 	PlaceComponentsFromCache()
 	ReplaceString(getKubeletServiceConf(), constants.DEFAULT_DNS_IP, GetIPFromSubnet(config.MasterConfiguration.Networking.ServiceSubnet, 10))

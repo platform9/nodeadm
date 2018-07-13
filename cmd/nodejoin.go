@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/platform9/nodeadm/apis"
 	"github.com/platform9/nodeadm/constants"
 	"github.com/platform9/nodeadm/utils"
 	"github.com/spf13/cobra"
@@ -11,6 +12,8 @@ var nodeCmdJoin = &cobra.Command{
 	Use:   "join",
 	Short: "Initalize the worker node with given configuration",
 	Run: func(cmd *cobra.Command, args []string) {
+		var config *apis.JoinConfiguration
+		apis.SetJoinDefaults(config)
 		utils.InstallWorkerComponents()
 		kubeadmJoin(cmd.Flag("token").Value.String(),
 			cmd.Flag("master").Value.String(),
