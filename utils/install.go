@@ -9,11 +9,12 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/platform9/nodeadm/apis"
 	"github.com/platform9/nodeadm/constants"
 	netutil "k8s.io/apimachinery/pkg/util/net"
 )
 
-func InstallMasterComponents(config *Configuration) {
+func InstallMasterComponents(config *apis.NodeadmConfiguration) {
 	PopulateCache()
 	PlaceComponentsFromCache()
 	ReplaceString(getKubeletServiceConf(), constants.DEFAULT_DNS_IP, GetIPFromSubnet(config.MasterConfiguration.Networking.ServiceSubnet, 10))
@@ -44,7 +45,7 @@ func writeTemplateIntoFile(tmpl, name, file string, data interface{}) {
 	w.Flush()
 }
 
-func writeKeepAlivedServiceFiles(config VIPConfiguration) {
+func writeKeepAlivedServiceFiles(config apis.VIPConfiguration) {
 	log.Printf("Vip configuration as parsed from the file %v\n", config)
 	if len(config.IP) == 0 {
 		ip, err := netutil.ChooseHostInterface()
