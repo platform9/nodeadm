@@ -14,7 +14,7 @@ var nodeCmdJoin = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		var config *apis.JoinConfiguration
 		apis.SetJoinDefaults(config)
-		utils.InstallWorkerComponents()
+		utils.InstallWorkerComponents(config)
 		kubeadmJoin(cmd.Flag("token").Value.String(),
 			cmd.Flag("master").Value.String(),
 			cmd.Flag("cahash").Value.String())
