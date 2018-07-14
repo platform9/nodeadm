@@ -57,6 +57,6 @@ const (
 	NodeadmKubeletSystemdDropinFilename = "20-nodeadm.conf"
 	NodeadmKubeletSystemdDropinTemplate = `[Service]
 Environment="KUBELET_DNS_ARGS=--cluster-dns={{ .ClusterDNS }} --cluster-domain={{ .ClusterDomain }}"
-Environment="KUBELET_EXTRA_ARGS=--max-pods={{ .MaxPods }}
+Environment="KUBELET_EXTRA_ARGS=--max-pods={{ .MaxPods }}"
 `
 )
