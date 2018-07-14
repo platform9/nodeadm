@@ -10,6 +10,8 @@ import (
 	"strings"
 	"text/template"
 
+	kubeadmconstants "k8s.io/kubernetes/cmd/kubeadm/app/constants"
+
 	"github.com/platform9/nodeadm/apis"
 	"github.com/platform9/nodeadm/constants"
 	netutil "k8s.io/apimachinery/pkg/util/net"
@@ -53,7 +55,12 @@ func placeAndModifyKubeadmKubeletSystemdDropin(netConfig apis.Networking) {
 	confFile := filepath.Join(constants.SYSTEMD_DIR, "kubelet.service.d", "10-kubeadm.conf")
 	Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME, "10-kubeadm.conf"), confFile)
 	ReplaceString(confFile, "/usr/bin", constants.BASE_INSTALL_DIR)
-	ReplaceString(confFile, constants.DEFAULT_DNS_IP, GetIPFromSubnet(netConfig.ServiceSubnet, 10))
+
+	dnsIP, err := kubeadmconstants.GetDNSIP(netConfig.ServiceSubnet)
+	if err != nil {
+		log.Fatalf("Failed to derive DNS IP from service subnet %q: %v", netConfig.ServiceSubnet, err)
+	}
+	ReplaceString(confFile, constants.DEFAULT_DNS_IP, dnsIP.String())
 }
 
 func placeKubeComponents() {
