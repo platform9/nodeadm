@@ -6,8 +6,14 @@ import (
 
 // InitConfiguration specifies the configuration used by the init command
 type InitConfiguration struct {
-	MasterConfiguration kubeadmv1alpha1.MasterConfiguration `json:"masterConfiguration"`
+	Networking          Networking                          `json:"networking"`
 	VIPConfiguration    VIPConfiguration                    `json:"vipConfiguration"`
+	MasterConfiguration kubeadmv1alpha1.MasterConfiguration `json:"masterConfiguration"`
+}
+
+// JoinConfiguration specifies the configuration used by the join command
+type JoinConfiguration struct {
+	Networking Networking `json:"networking"`
 }
 
 // VIPConfiguration specifies the parameters used to provision a virtual IP
@@ -23,15 +29,12 @@ type VIPConfiguration struct {
 	NetworkInterface string `json:"networkInterface"`
 }
 
-// JoinConfiguration specifies the configuration used by the join command
-type JoinConfiguration struct {
-	Networking Networking `json:"networking"`
-}
-
 // Networking contains elements describing cluster's networking configuration
 type Networking struct {
-	// ServicesCIDR is the network used by k8s services. Defaults to "10.96.0.0/12".
-	ServicesCIDR string `json:"servicesCidr"`
-	// ServiceDomain is the DNS domain used by k8s services. Defaults to "cluster.local".
-	ServiceDomain string `json:"ServiceDomain"`
+	// ServiceSubnet is the subnet used by k8s services. Defaults to "10.96.0.0/12".
+	ServiceSubnet string `json:"serviceSubnet"`
+	// PodSubnet is the subnet used by pods.
+	PodSubnet string `json:"podSubnet"`
+	// DNSDomain is the dns domain used by k8s services. Defaults to "cluster.local".
+	DNSDomain string `json:"dnsDomain"`
 }
