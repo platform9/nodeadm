@@ -3,6 +3,7 @@ package cmd
 import (
 	"io/ioutil"
 	"log"
+	"os"
 	"path/filepath"
 
 	"github.com/ghodss/yaml"
@@ -28,6 +29,13 @@ var nodeCmdInit = &cobra.Command{
 			}
 		}
 		apis.SetInitDefaults(config)
+		if errors := apis.ValidateInit(config); len(errors) > 0 {
+			log.Println("Failed to validate configuration:")
+			for i, err := range errors {
+				log.Printf("%v: %v", i, err)
+			}
+			os.Exit(1)
+		}
 
 		masterConfig, err := yaml.Marshal(config.MasterConfiguration)
 		if err != nil {

@@ -16,8 +16,8 @@ const (
 	FLANNEL_VERSION      = "v0.10.0"
 	DEFAULT_POD_NETWORK  = "10.244.0.0/16"
 	DEFAULT_DNS_IP       = "10.96.0.10"
-	DefaultServicesCIDR  = "10.96.0.0/12"
-	DefaultServiceDomain = "cluster.local"
+	DefaultServiceSubnet = "10.96.0.0/12"
+	DefaultDNSDomain     = "cluster.local"
 	DEFAULT_ROUTER_ID    = 42
 	KUBEADM_CONFIG       = "/tmp/kubeadm.yaml"
 	KUBE_DNS_VERSION     = "1.14.8"
