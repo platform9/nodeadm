@@ -96,17 +96,20 @@ func placeNetworkConfig() {
 func writeTemplateIntoFile(tmpl, name, file string, data interface{}) {
 	err := os.MkdirAll(filepath.Dir(file), constants.READ)
 	if err != nil {
-		log.Fatalf("Failed to create dirs for path %s with error %v\n", filepath.Dir(file), err)
+		log.Fatalf("Failed to create dirs for path %s with error %v", filepath.Dir(file), err)
 	}
 	f, err := os.Create(file)
+	if err != nil {
+		log.Fatalf("Failed to create file %q: %v", file, err)
+	}
 	defer f.Close()
 	w := bufio.NewWriter(f)
-	if err != nil {
-		log.Fatalf("Failed to create file %s\n", file)
-	}
 	t := template.Must(template.New(name).Parse(tmpl))
 	t.Execute(w, data)
-	w.Flush()
+	err = w.Flush()
+	if err != nil {
+		log.Fatalf("Failed to write to file %q: %v", file, err)
+	}
 }
 
 func writeKeepAlivedServiceFiles(config apis.VIPConfiguration) {
