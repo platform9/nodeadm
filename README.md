@@ -1,10 +1,22 @@
 # nodeadm
+
 Kubernetes node administration tool
+
 ## Usage
+
+### Init
 ```
-nodeadm init --cfg=<location to config file>
+nodeadm init --cfg=/tmp/nodeadm.yaml
 ```
-## Example config
+
+### Join
+```
+nodeadm join --cfg /tmp/nodeadm.yaml --master 192.168.96.75:6443 --token bootstrap.token --cahash sha256:digest
+```
+
+## Example Configuration
+
+### Init
 ```
 networking:
     podSubnet: 10.1.0.0/16
@@ -27,4 +39,12 @@ masterConfiguration:
     keyFile: /etc/etcd/pki/apiserver-etcd-client.key
     endpoints:
     - https://127.0.0.1:2379
+```
+
+### Join
+```
+networking:
+    podSubnet: 10.1.0.0/16
+    serviceSubnet: 172.1.0.0/24
+    dnsDomain: testcluster.local
 ```
