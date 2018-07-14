@@ -1,6 +1,7 @@
 package constants
 
 import (
+	"fmt"
 	"path/filepath"
 )
 
@@ -37,3 +38,14 @@ var CNI_VERSION_INSTALL_DIR = filepath.Join(CNI_BASE_DIR, CNI_DIR_NAME)
 var CONF_INSTALL_DIR = filepath.Join(BASE_INSTALL_DIR, CONFIG_DIR)
 var CACHE_DIR = filepath.Join(CACHE_BASE_DIR, KUBERNETES_VERSION)
 var IMAGES_CACHE_DIR = filepath.Join(CACHE_DIR, "images")
+
+const (
+	KubeadmFilename                     = "kubeadm"
+	KubectlFilename                     = "kubectl"
+	KubeletFilename                     = "kubelet"
+	KubeletSystemdUnitFilename          = "kubelet.service"
+	KubeadmKubeletSystemdDropinFilename = "10-kubeadm.conf"
+	FlannelManifestFilename             = "kube-flannel.yml"
+)
+
+var CNIPluginsFilename = fmt.Sprintf("cni-plugins-amd64-%s.tgz", CNI_VERSION)
