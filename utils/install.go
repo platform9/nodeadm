@@ -17,24 +17,25 @@ import (
 
 func InstallMasterComponents(config *apis.InitConfiguration) {
 	PopulateCache()
-	PlaceComponentsFromCache()
-	ReplaceString(getKubeletServiceConf(), constants.DEFAULT_DNS_IP, GetIPFromSubnet(config.MasterConfiguration.Networking.ServiceSubnet, 10))
+	PlaceComponentsFromCache(config.Networking)
+	// write 20-nodeadm.conf drop-in
+	// cluster-dns, cluster-domain, max-pods
 	EnableAndStartService("kubelet.service")
 	writeKeepAlivedServiceFiles(config.VIPConfiguration)
 	EnableAndStartService("keepalived.service")
 }
 
-func InstallWorkerComponents() {
+func InstallWorkerComponents(config *apis.JoinConfiguration) {
 	PopulateCache()
-	PlaceComponentsFromCache()
+	PlaceComponentsFromCache(config.Networking)
 	EnableAndStartService("kubelet.service")
 }
 
-func PlaceComponentsFromCache() {
+func PlaceComponentsFromCache(netConfig apis.Networking) {
 	placeKubeComponents()
 	placeCNIPlugin()
 	placeAndModifyKubeletServiceFile()
-	placeAndModifyKubeadmKubeletSystemdDropin()
+	placeAndModifyKubeadmKubeletSystemdDropin(netConfig)
 	placeNetworkConfig()
 }
 
@@ -44,7 +45,7 @@ func placeAndModifyKubeletServiceFile() {
 	ReplaceString(serviceFile, "/usr/bin", constants.BASE_INSTALL_DIR)
 }
 
-func placeAndModifyKubeadmKubeletSystemdDropin() {
+func placeAndModifyKubeadmKubeletSystemdDropin(netConfig apis.Networking) {
 	err := os.MkdirAll(filepath.Join(constants.SYSTEMD_DIR, "kubelet.service.d"), constants.EXECUTE)
 	if err != nil {
 		log.Fatalf("Failed to create dir with error %v\n", err)
@@ -52,6 +53,7 @@ func placeAndModifyKubeadmKubeletSystemdDropin() {
 	confFile := filepath.Join(constants.SYSTEMD_DIR, "kubelet.service.d", "10-kubeadm.conf")
 	Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME, "10-kubeadm.conf"), confFile)
 	ReplaceString(confFile, "/usr/bin", constants.BASE_INSTALL_DIR)
+	ReplaceString(confFile, constants.DEFAULT_DNS_IP, GetIPFromSubnet(netConfig.ServiceSubnet, 10))
 }
 
 func placeKubeComponents() {
