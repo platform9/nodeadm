@@ -32,7 +32,6 @@ masterConfiguration:
     bindPort: 443
   apiServerCertSANs:
   - 192.168.96.75
-  clusterName: test
   etcd:
     caFile: /etc/etcd/pki/ca.crt
     certFile: /etc/etcd/pki/apiserver-etcd-client.crt
