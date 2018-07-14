@@ -52,8 +52,8 @@ func placeAndModifyKubeadmKubeletSystemdDropin(netConfig apis.Networking) {
 	if err != nil {
 		log.Fatalf("Failed to create dir with error %v\n", err)
 	}
-	confFile := filepath.Join(constants.SYSTEMD_DIR, "kubelet.service.d", "10-kubeadm.conf")
-	Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME, "10-kubeadm.conf"), confFile)
+	confFile := filepath.Join(constants.SYSTEMD_DIR, "kubelet.service.d", constants.KubeadmKubeletSystemdDropinFilename)
+	Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME, constants.KubeadmKubeletSystemdDropinFilename), confFile)
 	ReplaceString(confFile, "/usr/bin", constants.BASE_INSTALL_DIR)
 
 	dnsIP, err := kubeadmconstants.GetDNSIP(netConfig.ServiceSubnet)
@@ -173,8 +173,4 @@ WantedBy=multi-user.target
 	}
 	kaServiceData := KaServiceData{confFile, constants.KEEPALIVED_IMG}
 	writeTemplateIntoFile(kaSvcFileTemplate, "kaSvcFileTemplate", filepath.Join(constants.SYSTEMD_DIR, "keepalived.service"), kaServiceData)
-}
-
-func getKubeletServiceConf() string {
-	return filepath.Join(constants.SYSTEMD_DIR, "kubelet.service.d", "10-kubeadm.conf")
 }
