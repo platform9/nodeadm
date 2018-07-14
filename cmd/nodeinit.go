@@ -55,7 +55,7 @@ var nodeCmdInit = &cobra.Command{
 }
 
 func networkInit(config *apis.InitConfiguration) {
-	file := filepath.Join(constants.CONF_INSTALL_DIR, "flannel.yaml")
+	file := filepath.Join(constants.CONF_INSTALL_DIR, constants.FlannelManifestFilename)
 	log.Printf("Pod network %s\n", config.MasterConfiguration.Networking.PodSubnet)
 	utils.ReplaceString(file, constants.DEFAULT_POD_NETWORK, config.MasterConfiguration.Networking.PodSubnet)
 	utils.Run(constants.BASE_INSTALL_DIR, "sysctl", "net.bridge.bridge-nf-call-iptables=1")
