@@ -49,3 +49,14 @@ const (
 )
 
 var CNIPluginsFilename = fmt.Sprintf("cni-plugins-amd64-%s.tgz", CNI_VERSION)
+
+const (
+	// TODO(dlipovetsky) Move field to configuration
+	KubeletMaxPods = 500
+
+	NodeadmKubeletSystemdDropinFilename = "20-nodeadm.conf"
+	NodeadmKubeletSystemdDropinTemplate = `[Service]
+Environment="KUBELET_DNS_ARGS=--cluster-dns={{ .ClusterDNS }} --cluster-domain={{ .ClusterDomain }}"
+Environment="KUBELET_EXTRA_ARGS=--max-pods={{ .MaxPods }}
+`
+)

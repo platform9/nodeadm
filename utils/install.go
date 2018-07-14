@@ -20,8 +20,6 @@ import (
 func InstallMasterComponents(config *apis.InitConfiguration) {
 	PopulateCache()
 	PlaceComponentsFromCache(config.Networking)
-	// write 20-nodeadm.conf drop-in
-	// cluster-dns, cluster-domain, max-pods
 	EnableAndStartService("kubelet.service")
 	writeKeepAlivedServiceFiles(config.VIPConfiguration)
 	EnableAndStartService("keepalived.service")
@@ -38,6 +36,7 @@ func PlaceComponentsFromCache(netConfig apis.Networking) {
 	placeCNIPlugin()
 	placeAndModifyKubeletServiceFile()
 	placeAndModifyKubeadmKubeletSystemdDropin(netConfig)
+	placeAndModifyNodeadmKubeletSystemdDropin(netConfig)
 	placeNetworkConfig()
 }
 
@@ -55,12 +54,30 @@ func placeAndModifyKubeadmKubeletSystemdDropin(netConfig apis.Networking) {
 	confFile := filepath.Join(constants.SYSTEMD_DIR, "kubelet.service.d", constants.KubeadmKubeletSystemdDropinFilename)
 	Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME, constants.KubeadmKubeletSystemdDropinFilename), confFile)
 	ReplaceString(confFile, "/usr/bin", constants.BASE_INSTALL_DIR)
+}
 
+func placeAndModifyNodeadmKubeletSystemdDropin(netConfig apis.Networking) {
+	err := os.MkdirAll(filepath.Join(constants.SYSTEMD_DIR, "kubelet.service.d"), constants.EXECUTE)
+	if err != nil {
+		log.Fatalf("Failed to create dir with error %v\n", err)
+	}
+	confFile := filepath.Join(constants.SYSTEMD_DIR, "kubelet.service.d", constants.NodeadmKubeletSystemdDropinFilename)
 	dnsIP, err := kubeadmconstants.GetDNSIP(netConfig.ServiceSubnet)
 	if err != nil {
 		log.Fatalf("Failed to derive DNS IP from service subnet %q: %v", netConfig.ServiceSubnet, err)
 	}
-	ReplaceString(confFile, constants.DEFAULT_DNS_IP, dnsIP.String())
+
+	data := struct {
+		MaxPods       int
+		ClusterDNS    string
+		ClusterDomain string
+	}{
+		MaxPods:       constants.KubeletMaxPods,
+		ClusterDNS:    dnsIP.String(),
+		ClusterDomain: netConfig.DNSDomain,
+	}
+
+	writeTemplateIntoFile(constants.NodeadmKubeletSystemdDropinTemplate, "nodeadm-kubelet-systemd-dropin", confFile, data)
 }
 
 func placeKubeComponents() {
