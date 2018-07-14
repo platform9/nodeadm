@@ -70,17 +70,18 @@ var NodeArtifact = []Artifact{
 func PlaceComponentsFromCache() {
 	placeKubeComponents()
 	placeCNIPlugin()
-	placeKubeletServiceFiles()
+	placeAndModifyKubeletServiceFile()
+	placeAndModifyKubeadmKubeletSystemdDropin()
 	placeNetworkConfig()
 }
 
-func placeKubeletServiceFiles() {
-	//kubelet service
+func placeAndModifyKubeletServiceFile() {
 	serviceFile := filepath.Join(constants.SYSTEMD_DIR, "kubelet.service")
 	Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME, "kubelet.service"), serviceFile)
 	ReplaceString(serviceFile, "/usr/bin", constants.BASE_INSTALL_DIR)
+}
 
-	//kubelet service conf
+func placeAndModifyKubeadmKubeletSystemdDropin() {
 	err := os.MkdirAll(filepath.Join(constants.SYSTEMD_DIR, "kubelet.service.d"), constants.EXECUTE)
 	if err != nil {
 		log.Fatalf("Failed to create dir with error %v\n", err)
