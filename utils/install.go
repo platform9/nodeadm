@@ -68,10 +68,12 @@ func placeAndModifyNodeadmKubeletSystemdDropin(netConfig apis.Networking) {
 	}
 
 	data := struct {
+		FailSwapOn    bool
 		MaxPods       int
 		ClusterDNS    string
 		ClusterDomain string
 	}{
+		FailSwapOn:    constants.KubeletFailSwapOn,
 		MaxPods:       constants.KubeletMaxPods,
 		ClusterDNS:    dnsIP.String(),
 		ClusterDomain: netConfig.DNSDomain,
