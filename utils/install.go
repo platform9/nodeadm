@@ -107,7 +107,7 @@ func placeCNIPlugin() {
 
 func placeNetworkConfig() {
 	os.MkdirAll(constants.CONF_INSTALL_DIR, constants.EXECUTE)
-	Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.FLANNEL_DIR_NAME, "kube-flannel.yml"), filepath.Join(constants.CONF_INSTALL_DIR, "flannel.yaml"))
+	Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.FLANNEL_DIR_NAME, constants.FlannelManifestFilename), filepath.Join(constants.CONF_INSTALL_DIR, constants.FlannelManifestFilename))
 }
 
 func writeTemplateIntoFile(tmpl, name, file string, data interface{}) {
