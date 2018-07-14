@@ -24,43 +24,43 @@ type Artifact struct {
 
 var NodeArtifact = []Artifact{
 	{
-		Name:     "kubeadm",
+		Name:     constants.KubeadmFilename,
 		Type:     "executable",
 		Upstream: fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/%s/bin/linux/amd64/", constants.KUBERNETES_VERSION),
 		Local:    filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME),
 	},
 	{
-		Name:     "kubectl",
+		Name:     constants.KubectlFilename,
 		Type:     "executable",
 		Upstream: fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/%s/bin/linux/amd64/", constants.KUBERNETES_VERSION),
 		Local:    filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME),
 	},
 	{
-		Name:     "kubelet",
+		Name:     constants.KubeletFilename,
 		Type:     "executable",
 		Upstream: fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/%s/bin/linux/amd64/", constants.KUBERNETES_VERSION),
 		Local:    filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME),
 	},
 	{
-		Name:     "kubelet.service",
+		Name:     constants.KubeletSystemdUnitFilename,
 		Type:     "regular",
 		Upstream: fmt.Sprintf("https://raw.githubusercontent.com/kubernetes/kubernetes/%s/build/debs/", constants.KUBERNETES_VERSION),
 		Local:    filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME),
 	},
 	{
-		Name:     "10-kubeadm.conf",
+		Name:     constants.KubeadmKubeletSystemdDropinFilename,
 		Type:     "regular",
 		Upstream: fmt.Sprintf("https://raw.githubusercontent.com/kubernetes/kubernetes/%s/build/debs/", constants.KUBERNETES_VERSION),
 		Local:    filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME),
 	},
 	{
-		Name:     fmt.Sprintf("cni-plugins-amd64-%s.tgz", constants.CNI_VERSION),
+		Name:     constants.CNIPluginsFilename,
 		Type:     "regular",
 		Upstream: fmt.Sprintf("https://github.com/containernetworking/plugins/releases/download/%s/", constants.CNI_VERSION),
 		Local:    filepath.Join(constants.CACHE_DIR, constants.CNI_DIR_NAME),
 	},
 	{
-		Name:     "kube-flannel.yml",
+		Name:     constants.FlannelManifestFilename,
 		Type:     "regular",
 		Upstream: fmt.Sprintf("https://raw.githubusercontent.com/coreos/flannel/%s/Documentation/", constants.FLANNEL_VERSION),
 		Local:    filepath.Join(constants.CACHE_DIR, constants.FLANNEL_DIR_NAME),
