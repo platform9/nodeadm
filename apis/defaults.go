@@ -15,6 +15,9 @@ func SetInitDefaults(config *InitConfiguration) {
 	kubeadmv1alpha1.SetDefaults_MasterConfiguration(&config.MasterConfiguration)
 	config.MasterConfiguration.KubernetesVersion = constants.KUBERNETES_VERSION
 	config.MasterConfiguration.NoTaintMaster = true
+	config.MasterConfiguration.APIServerExtraArgs = map[string]string{
+		"service-node-port-range": constants.ServiceNodePortRange,
+	}
 }
 
 // SetJoinDefaults sets defaults on the configuration used by join
