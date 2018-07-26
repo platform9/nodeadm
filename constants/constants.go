@@ -26,6 +26,7 @@ const (
 	CACHE_BASE_DIR       = "/var/cache/nodeadm/"
 	EXECUTE              = 0744
 	READ                 = 0644
+	ServiceNodePortRange = "80-32767"
 )
 
 var KUBE_DIR_NAME = "kubernetes-" + KUBERNETES_VERSION
