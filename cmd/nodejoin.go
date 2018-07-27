@@ -13,7 +13,7 @@ import (
 // nodeCmd represents the cluster command
 var nodeCmdJoin = &cobra.Command{
 	Use:   "join",
-	Short: "Initalize the worker node with given configuration",
+	Short: "Initalize the node with given configuration",
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
 		config := &apis.JoinConfiguration{}
@@ -25,7 +25,7 @@ var nodeCmdJoin = &cobra.Command{
 			}
 		}
 		apis.SetJoinDefaults(config)
-		utils.InstallWorkerComponents(config)
+		utils.InstallNodeComponents(config)
 		kubeadmJoin(cmd.Flag("token").Value.String(),
 			cmd.Flag("master").Value.String(),
 			cmd.Flag("cahash").Value.String())
