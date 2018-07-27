@@ -18,6 +18,17 @@ func SetInitDefaults(config *InitConfiguration) {
 	config.MasterConfiguration.APIServerExtraArgs = map[string]string{
 		"service-node-port-range": constants.ServiceNodePortRange,
 	}
+
+}
+
+// SetInitDynamicDefaults sets defaults derived  at runtime
+func SetInitDynamicDefaults(config *InitConfiguration) error {
+	nodeName, err := constants.GetHostnameOverride()
+	if err != nil {
+		return err
+	}
+	config.MasterConfiguration.NodeName = nodeName
+	return nil
 }
 
 // SetJoinDefaults sets defaults on the configuration used by join

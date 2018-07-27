@@ -31,6 +31,9 @@ var nodeCmdInit = &cobra.Command{
 			}
 		}
 		apis.SetInitDefaults(config)
+		if err := apis.SetInitDynamicDefaults(config); err != nil {
+			log.Fatalf("Failed to set dynamic defaults: %v", err)
+		}
 		if errors := apis.ValidateInit(config); len(errors) > 0 {
 			log.Println("Failed to validate configuration:")
 			for i, err := range errors {
