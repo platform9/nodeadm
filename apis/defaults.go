@@ -1,6 +1,8 @@
 package apis
 
 import (
+	"fmt"
+
 	"github.com/platform9/nodeadm/constants"
 	kubeadmv1alpha1 "k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm/v1alpha1"
 )
@@ -25,7 +27,7 @@ func SetInitDefaults(config *InitConfiguration) {
 func SetInitDynamicDefaults(config *InitConfiguration) error {
 	nodeName, err := constants.GetHostnameOverride()
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to dervice hostname override: %v", err)
 	}
 	config.MasterConfiguration.NodeName = nodeName
 	return nil

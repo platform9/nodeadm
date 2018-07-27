@@ -8,6 +8,9 @@ import (
 	"path/filepath"
 
 	"github.com/ghodss/yaml"
+
+	"github.com/platform9/nodeadm/workarounds"
+
 	"github.com/platform9/nodeadm/apis"
 	"github.com/platform9/nodeadm/constants"
 	"github.com/platform9/nodeadm/deprecated"
@@ -54,6 +57,11 @@ var nodeCmdInit = &cobra.Command{
 		utils.InstallMasterComponents(config)
 
 		kubeadmInit(constants.KUBEADM_CONFIG)
+
+		log.Println("Applying workaround for https://github.com/kubernetes/kubeadm/issues/857")
+		if err := workarounds.EnsureKubeProxyRespectsHostoverride(); err != nil {
+			log.Fatalf("Failed to apply workaround: %v", err)
+		}
 
 		networkInit(config)
 	},
