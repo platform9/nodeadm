@@ -7,6 +7,7 @@
 SHELL := /usr/bin/env bash
 BIN := nodeadm
 PACKAGE_GOPATH := /go/src/github.com/platform9/$(BIN)
+LDFLAGS := $(shell source ./version.sh ; KUBE_ROOT=. ; kube::version::ldflags)
 
 .PHONY: container-build default clean
 
@@ -19,4 +20,4 @@ clean:
 	rm -f $(BIN)
 
 $(BIN):
-	go build
+	go build -ldflags "$(LDFLAGS)"
