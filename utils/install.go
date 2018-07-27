@@ -26,7 +26,7 @@ func InstallMasterComponents(config *apis.InitConfiguration) {
 	EnableAndStartService("keepalived.service")
 }
 
-func InstallWorkerComponents(config *apis.JoinConfiguration) {
+func InstallNodeComponents(config *apis.JoinConfiguration) {
 	PopulateCache()
 	PlaceComponentsFromCache(config.Networking)
 	EnableAndStartService("kubelet.service")
@@ -63,21 +63,29 @@ func placeAndModifyNodeadmKubeletSystemdDropin(netConfig apis.Networking) {
 		log.Fatalf("Failed to create dir with error %v\n", err)
 	}
 	confFile := filepath.Join(constants.SYSTEMD_DIR, "kubelet.service.d", constants.NodeadmKubeletSystemdDropinFilename)
+
 	dnsIP, err := kubeadmconstants.GetDNSIP(netConfig.ServiceSubnet)
 	if err != nil {
 		log.Fatalf("Failed to derive DNS IP from service subnet %q: %v", netConfig.ServiceSubnet, err)
 	}
 
+	hostnameOverride, err := constants.GetHostnameOverride()
+	if err != nil {
+		log.Fatalf("Failed to dervice hostname override: %v", err)
+	}
+
 	data := struct {
-		FailSwapOn    bool
-		MaxPods       int
-		ClusterDNS    string
-		ClusterDomain string
+		FailSwapOn       bool
+		MaxPods          int
+		ClusterDNS       string
+		ClusterDomain    string
+		HostnameOverride string
 	}{
-		FailSwapOn:    constants.KubeletFailSwapOn,
-		MaxPods:       constants.KubeletMaxPods,
-		ClusterDNS:    dnsIP.String(),
-		ClusterDomain: netConfig.DNSDomain,
+		FailSwapOn:       constants.KubeletFailSwapOn,
+		MaxPods:          constants.KubeletMaxPods,
+		ClusterDNS:       dnsIP.String(),
+		ClusterDomain:    netConfig.DNSDomain,
+		HostnameOverride: hostnameOverride,
 	}
 
 	writeTemplateIntoFile(constants.NodeadmKubeletSystemdDropinTemplate, "nodeadm-kubelet-systemd-dropin", confFile, data)

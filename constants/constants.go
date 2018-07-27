@@ -3,6 +3,8 @@ package constants
 import (
 	"fmt"
 	"path/filepath"
+
+	netutil "k8s.io/apimachinery/pkg/util/net"
 )
 
 const (
@@ -59,6 +61,14 @@ const (
 	NodeadmKubeletSystemdDropinFilename = "20-nodeadm.conf"
 	NodeadmKubeletSystemdDropinTemplate = `[Service]
 Environment="KUBELET_DNS_ARGS=--cluster-dns={{ .ClusterDNS }} --cluster-domain={{ .ClusterDomain }}"
-Environment="KUBELET_EXTRA_ARGS=--max-pods={{ .MaxPods }} --fail-swap-on={{ .FailSwapOn }}"
+Environment="KUBELET_EXTRA_ARGS=--max-pods={{ .MaxPods }} --fail-swap-on={{ .FailSwapOn }} --hostname-override={{ .HostnameOverride }}"
 `
 )
+
+func GetHostnameOverride() (string, error) {
+	defaultIP, err := netutil.ChooseHostInterface()
+	if err != nil {
+		return "", fmt.Errorf("failed to get default interface with err %v", err)
+	}
+	return defaultIP.String(), nil
+}
