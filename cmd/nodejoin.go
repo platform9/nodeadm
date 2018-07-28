@@ -5,6 +5,7 @@ import (
 
 	"github.com/platform9/nodeadm/apis"
 	"github.com/platform9/nodeadm/constants"
+	"github.com/platform9/nodeadm/deprecated"
 	"github.com/platform9/nodeadm/utils"
 	"github.com/spf13/cobra"
 )
@@ -32,7 +33,7 @@ var nodeCmdJoin = &cobra.Command{
 }
 
 func kubeadmJoin(token, master, cahash string) {
-	utils.Run(constants.BASE_INSTALL_DIR, "kubeadm", "join", "--token", token, master, "--discovery-token-ca-cert-hash", cahash)
+	deprecated.Run(constants.BASE_INSTALL_DIR, "kubeadm", "join", "--token", token, master, "--discovery-token-ca-cert-hash", cahash)
 }
 
 func init() {

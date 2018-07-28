@@ -14,6 +14,7 @@ import (
 
 	"github.com/platform9/nodeadm/apis"
 	"github.com/platform9/nodeadm/constants"
+	"github.com/platform9/nodeadm/deprecated"
 	netutil "k8s.io/apimachinery/pkg/util/net"
 )
 
@@ -42,7 +43,7 @@ func PlaceComponentsFromCache(netConfig apis.Networking) {
 
 func placeAndModifyKubeletServiceFile() {
 	serviceFile := filepath.Join(constants.SYSTEMD_DIR, "kubelet.service")
-	Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME, "kubelet.service"), serviceFile)
+	deprecated.Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME, "kubelet.service"), serviceFile)
 	ReplaceString(serviceFile, "/usr/bin", constants.BASE_INSTALL_DIR)
 }
 
@@ -52,7 +53,7 @@ func placeAndModifyKubeadmKubeletSystemdDropin(netConfig apis.Networking) {
 		log.Fatalf("Failed to create dir with error %v\n", err)
 	}
 	confFile := filepath.Join(constants.SYSTEMD_DIR, "kubelet.service.d", constants.KubeadmKubeletSystemdDropinFilename)
-	Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME, constants.KubeadmKubeletSystemdDropinFilename), confFile)
+	deprecated.Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME, constants.KubeadmKubeletSystemdDropinFilename), confFile)
 	ReplaceString(confFile, "/usr/bin", constants.BASE_INSTALL_DIR)
 }
 
@@ -87,21 +88,21 @@ func placeKubeComponents() {
 	if err != nil {
 		log.Fatalf("Failed to create dir %s with error %v\n", constants.KUBE_VERSION_INSTALL_DIR, err)
 	}
-	Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME, "kubectl"), filepath.Join(constants.KUBE_VERSION_INSTALL_DIR, "kubectl"))
-	Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME, "kubeadm"), filepath.Join(constants.KUBE_VERSION_INSTALL_DIR, "kubeadm"))
-	Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME, "kubelet"), filepath.Join(constants.KUBE_VERSION_INSTALL_DIR, "kubelet"))
+	deprecated.Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME, "kubectl"), filepath.Join(constants.KUBE_VERSION_INSTALL_DIR, "kubectl"))
+	deprecated.Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME, "kubeadm"), filepath.Join(constants.KUBE_VERSION_INSTALL_DIR, "kubeadm"))
+	deprecated.Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME, "kubelet"), filepath.Join(constants.KUBE_VERSION_INSTALL_DIR, "kubelet"))
 	CreateSymLinks(constants.KUBE_VERSION_INSTALL_DIR, constants.BASE_INSTALL_DIR, true)
 }
 
 func placeCNIPlugin() {
 	tmpFile := fmt.Sprintf("cni-plugins-amd64-%s.tgz", constants.CNI_VERSION)
-	Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.CNI_DIR_NAME, tmpFile), filepath.Join("/tmp", tmpFile))
+	deprecated.Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.CNI_DIR_NAME, tmpFile), filepath.Join("/tmp", tmpFile))
 	if _, err := os.Stat(constants.CNI_VERSION_INSTALL_DIR); os.IsNotExist(err) {
 		err := os.MkdirAll(constants.CNI_VERSION_INSTALL_DIR, constants.EXECUTE)
 		if err != nil {
 			log.Fatalf("Failed to create dir %s with error %v\n", constants.CNI_VERSION_INSTALL_DIR, err)
 		}
-		Run("", "tar", "-xvf", filepath.Join("/tmp", tmpFile), "-C", constants.CNI_VERSION_INSTALL_DIR)
+		deprecated.Run("", "tar", "-xvf", filepath.Join("/tmp", tmpFile), "-C", constants.CNI_VERSION_INSTALL_DIR)
 		CreateSymLinks(constants.CNI_VERSION_INSTALL_DIR, constants.CNI_BASE_DIR, true)
 	}
 
@@ -109,7 +110,7 @@ func placeCNIPlugin() {
 
 func placeNetworkConfig() {
 	os.MkdirAll(constants.CONF_INSTALL_DIR, constants.EXECUTE)
-	Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.FLANNEL_DIR_NAME, constants.FlannelManifestFilename), filepath.Join(constants.CONF_INSTALL_DIR, constants.FlannelManifestFilename))
+	deprecated.Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.FLANNEL_DIR_NAME, constants.FlannelManifestFilename), filepath.Join(constants.CONF_INSTALL_DIR, constants.FlannelManifestFilename))
 }
 
 func writeTemplateIntoFile(tmpl, name, file string, data interface{}) {

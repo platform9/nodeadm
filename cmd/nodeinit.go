@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/platform9/nodeadm/apis"
 	"github.com/platform9/nodeadm/constants"
+	"github.com/platform9/nodeadm/deprecated"
 	"github.com/platform9/nodeadm/utils"
 	"github.com/spf13/cobra"
 )
@@ -58,12 +60,12 @@ func networkInit(config *apis.InitConfiguration) {
 	file := filepath.Join(constants.CONF_INSTALL_DIR, constants.FlannelManifestFilename)
 	log.Printf("Pod network %s\n", config.MasterConfiguration.Networking.PodSubnet)
 	utils.ReplaceString(file, constants.DEFAULT_POD_NETWORK, config.MasterConfiguration.Networking.PodSubnet)
-	utils.Run(constants.BASE_INSTALL_DIR, "sysctl", "net.bridge.bridge-nf-call-iptables=1")
-	utils.Run(constants.BASE_INSTALL_DIR, "kubectl", "--kubeconfig="+"/etc/kubernetes/admin.conf", "apply", "-f", file)
+	deprecated.Run(constants.BASE_INSTALL_DIR, "sysctl", "net.bridge.bridge-nf-call-iptables=1")
+	deprecated.Run(constants.BASE_INSTALL_DIR, "kubectl", fmt.Sprintf("--kubeconfig=%s", constants.AdminKubeconfigFile), "apply", "-f", file)
 }
 
 func kubeadmInit(config string) {
-	utils.Run(constants.BASE_INSTALL_DIR, "kubeadm", "init", "--config="+config)
+	deprecated.Run(constants.BASE_INSTALL_DIR, "kubeadm", "init", "--config="+config)
 }
 
 func init() {

@@ -13,6 +13,7 @@ import (
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/platform9/nodeadm/constants"
+	"github.com/platform9/nodeadm/deprecated"
 )
 
 type Artifact struct {
@@ -74,7 +75,7 @@ func loadAvailableImages(cli *client.Client) {
 		log.Printf("Failed to list files from dir %s skipping loading images with err %v\n", constants.IMAGES_CACHE_DIR, err)
 	}
 	for _, file := range files {
-		Run("", "docker", "load", "-i", filepath.Join(constants.IMAGES_CACHE_DIR, file.Name()))
+		deprecated.Run("", "docker", "load", "-i", filepath.Join(constants.IMAGES_CACHE_DIR, file.Name()))
 	}
 }
 
@@ -97,13 +98,13 @@ func PopulateCache() {
 		}
 		if len(list) == 0 {
 			log.Printf("Trying to pull image %s", image)
-			Run("", "docker", "pull", image)
+			deprecated.Run("", "docker", "pull", image)
 		}
 		list, err = cli.ImageList(context.Background(), types.ImageListOptions{
 			Filters: nameFilter,
 		})
 		imageFile := filepath.Join(constants.IMAGES_CACHE_DIR, strings.Replace(list[0].ID, "sha256:", "", -1)+".tar")
-		Run("", "docker", "save", image, "-o", imageFile)
+		deprecated.Run("", "docker", "save", image, "-o", imageFile)
 	}
 	for _, file := range NodeArtifact {
 		mode := constants.READ
