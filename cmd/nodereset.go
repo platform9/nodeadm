@@ -1,12 +1,14 @@
 package cmd
 
 import (
-	"github.com/platform9/nodeadm/constants"
-	"github.com/platform9/nodeadm/utils"
-	"github.com/spf13/cobra"
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/platform9/nodeadm/constants"
+	"github.com/platform9/nodeadm/deprecated"
+	"github.com/platform9/nodeadm/utils"
+	"github.com/spf13/cobra"
 )
 
 // nodeCmd represents the cluster command
@@ -26,7 +28,7 @@ var nodeCmdReset = &cobra.Command{
 
 func kubeadmReset() {
 	log.Printf("[nodeadm:reset] Invoking kubeadm reset")
-	utils.RunBestEffort(constants.BASE_INSTALL_DIR, "kubeadm", "reset")
+	deprecated.RunBestEffort(constants.BASE_INSTALL_DIR, "kubeadm", "reset")
 }
 
 func cleanupKeepalived() {
@@ -62,13 +64,13 @@ func cleanupNetworking() {
 	log.Printf("[nodeadm:reset] Removing flannel state files & resetting networking")
 	os.RemoveAll(constants.CNI_CONFIG_DIR)
 	os.RemoveAll(constants.CNI_STATE_DIR)
-	utils.RunBestEffort("", "ip", "link", "del", "cni0")
-	utils.RunBestEffort("", "ip", "link", "del", "flannel.1")
+	deprecated.RunBestEffort("", "ip", "link", "del", "cni0")
+	deprecated.RunBestEffort("", "ip", "link", "del", "flannel.1")
 }
 
 func cleanupDockerImages() {
 	for _, image := range utils.GetImages() {
-		utils.RunBestEffort("", "docker", "rmi", "-f", image)
+		deprecated.RunBestEffort("", "docker", "rmi", "-f", image)
 	}
 }
 
