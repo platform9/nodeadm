@@ -13,7 +13,7 @@ import (
 )
 
 type Version struct {
-	ClientVersion *apimachineryversion.Info `json:"clientVersion,omitempty" yaml:"clientVersion,omitempty"`
+	ClientVersion *apimachineryversion.Info `json:"clientVersion,omitempty"`
 }
 
 var versionCmd = &cobra.Command{
@@ -53,7 +53,7 @@ var versionCmd = &cobra.Command{
 			}
 			fmt.Println(string(marshalled))
 		default:
-			log.Fatalf("Invalid output value use yaml/json")
+			log.Fatalf("Invalid output format. Use yaml/json")
 		}
 	},
 }
