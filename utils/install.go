@@ -42,27 +42,27 @@ func PlaceComponentsFromCache(netConfig apis.Networking) {
 }
 
 func placeAndModifyKubeletServiceFile() {
-	serviceFile := filepath.Join(constants.SYSTEMD_DIR, "kubelet.service")
-	deprecated.Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME, "kubelet.service"), serviceFile)
-	ReplaceString(serviceFile, "/usr/bin", constants.BASE_INSTALL_DIR)
+	serviceFile := filepath.Join(constants.SystemdDir, "kubelet.service")
+	deprecated.Run("", "cp", filepath.Join(constants.CacheDir, constants.KubeDirName, "kubelet.service"), serviceFile)
+	ReplaceString(serviceFile, "/usr/bin", constants.BaseInstallDir)
 }
 
 func placeAndModifyKubeadmKubeletSystemdDropin(netConfig apis.Networking) {
-	err := os.MkdirAll(filepath.Join(constants.SYSTEMD_DIR, "kubelet.service.d"), constants.EXECUTE)
+	err := os.MkdirAll(filepath.Join(constants.SystemdDir, "kubelet.service.d"), constants.Execute)
 	if err != nil {
 		log.Fatalf("Failed to create dir with error %v\n", err)
 	}
-	confFile := filepath.Join(constants.SYSTEMD_DIR, "kubelet.service.d", constants.KubeadmKubeletSystemdDropinFilename)
-	deprecated.Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME, constants.KubeadmKubeletSystemdDropinFilename), confFile)
-	ReplaceString(confFile, "/usr/bin", constants.BASE_INSTALL_DIR)
+	confFile := filepath.Join(constants.SystemdDir, "kubelet.service.d", constants.KubeadmKubeletSystemdDropinFilename)
+	deprecated.Run("", "cp", filepath.Join(constants.CacheDir, constants.KubeDirName, constants.KubeadmKubeletSystemdDropinFilename), confFile)
+	ReplaceString(confFile, "/usr/bin", constants.BaseInstallDir)
 }
 
 func placeAndModifyNodeadmKubeletSystemdDropin(netConfig apis.Networking) {
-	err := os.MkdirAll(filepath.Join(constants.SYSTEMD_DIR, "kubelet.service.d"), constants.EXECUTE)
+	err := os.MkdirAll(filepath.Join(constants.SystemdDir, "kubelet.service.d"), constants.Execute)
 	if err != nil {
 		log.Fatalf("Failed to create dir with error %v\n", err)
 	}
-	confFile := filepath.Join(constants.SYSTEMD_DIR, "kubelet.service.d", constants.NodeadmKubeletSystemdDropinFilename)
+	confFile := filepath.Join(constants.SystemdDir, "kubelet.service.d", constants.NodeadmKubeletSystemdDropinFilename)
 
 	dnsIP, err := kubeadmconstants.GetDNSIP(netConfig.ServiceSubnet)
 	if err != nil {
@@ -92,37 +92,37 @@ func placeAndModifyNodeadmKubeletSystemdDropin(netConfig apis.Networking) {
 }
 
 func placeKubeComponents() {
-	err := os.MkdirAll(constants.KUBE_VERSION_INSTALL_DIR, constants.EXECUTE)
+	err := os.MkdirAll(constants.KubeVersionInstallDir, constants.Execute)
 	if err != nil {
-		log.Fatalf("Failed to create dir %s with error %v\n", constants.KUBE_VERSION_INSTALL_DIR, err)
+		log.Fatalf("Failed to create dir %s with error %v\n", constants.KubeVersionInstallDir, err)
 	}
-	deprecated.Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME, "kubectl"), filepath.Join(constants.KUBE_VERSION_INSTALL_DIR, "kubectl"))
-	deprecated.Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME, "kubeadm"), filepath.Join(constants.KUBE_VERSION_INSTALL_DIR, "kubeadm"))
-	deprecated.Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME, "kubelet"), filepath.Join(constants.KUBE_VERSION_INSTALL_DIR, "kubelet"))
-	CreateSymLinks(constants.KUBE_VERSION_INSTALL_DIR, constants.BASE_INSTALL_DIR, true)
+	deprecated.Run("", "cp", filepath.Join(constants.CacheDir, constants.KubeDirName, "kubectl"), filepath.Join(constants.KubeVersionInstallDir, "kubectl"))
+	deprecated.Run("", "cp", filepath.Join(constants.CacheDir, constants.KubeDirName, "kubeadm"), filepath.Join(constants.KubeVersionInstallDir, "kubeadm"))
+	deprecated.Run("", "cp", filepath.Join(constants.CacheDir, constants.KubeDirName, "kubelet"), filepath.Join(constants.KubeVersionInstallDir, "kubelet"))
+	CreateSymLinks(constants.KubeVersionInstallDir, constants.BaseInstallDir, true)
 }
 
 func placeCNIPlugin() {
-	tmpFile := fmt.Sprintf("cni-plugins-amd64-%s.tgz", constants.CNI_VERSION)
-	deprecated.Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.CNI_DIR_NAME, tmpFile), filepath.Join("/tmp", tmpFile))
-	if _, err := os.Stat(constants.CNI_VERSION_INSTALL_DIR); os.IsNotExist(err) {
-		err := os.MkdirAll(constants.CNI_VERSION_INSTALL_DIR, constants.EXECUTE)
+	tmpFile := fmt.Sprintf("cni-plugins-amd64-%s.tgz", constants.CNIVersion)
+	deprecated.Run("", "cp", filepath.Join(constants.CacheDir, constants.CNIDirName, tmpFile), filepath.Join("/tmp", tmpFile))
+	if _, err := os.Stat(constants.CniVersionInstallDir); os.IsNotExist(err) {
+		err := os.MkdirAll(constants.CniVersionInstallDir, constants.Execute)
 		if err != nil {
-			log.Fatalf("Failed to create dir %s with error %v\n", constants.CNI_VERSION_INSTALL_DIR, err)
+			log.Fatalf("Failed to create dir %s with error %v\n", constants.CniVersionInstallDir, err)
 		}
-		deprecated.Run("", "tar", "-xvf", filepath.Join("/tmp", tmpFile), "-C", constants.CNI_VERSION_INSTALL_DIR)
-		CreateSymLinks(constants.CNI_VERSION_INSTALL_DIR, constants.CNI_BASE_DIR, true)
+		deprecated.Run("", "tar", "-xvf", filepath.Join("/tmp", tmpFile), "-C", constants.CniVersionInstallDir)
+		CreateSymLinks(constants.CniVersionInstallDir, constants.CNIBaseDir, true)
 	}
 
 }
 
 func placeNetworkConfig() {
-	os.MkdirAll(constants.CONF_INSTALL_DIR, constants.EXECUTE)
-	deprecated.Run("", "cp", filepath.Join(constants.CACHE_DIR, constants.FLANNEL_DIR_NAME, constants.FlannelManifestFilename), filepath.Join(constants.CONF_INSTALL_DIR, constants.FlannelManifestFilename))
+	os.MkdirAll(constants.ConfInstallDir, constants.Execute)
+	deprecated.Run("", "cp", filepath.Join(constants.CacheDir, constants.FlannelDirName, constants.FlannelManifestFilename), filepath.Join(constants.ConfInstallDir, constants.FlannelManifestFilename))
 }
 
 func writeTemplateIntoFile(tmpl, name, file string, data interface{}) {
-	err := os.MkdirAll(filepath.Dir(file), constants.READ)
+	err := os.MkdirAll(filepath.Dir(file), constants.Read)
 	if err != nil {
 		log.Fatalf("Failed to create dirs for path %s with error %v", filepath.Dir(file), err)
 	}
@@ -161,7 +161,7 @@ func writeKeepAlivedServiceFiles(config apis.VIPConfiguration) {
 	}
 
 	if config.RouterID == 0 {
-		config.RouterID = constants.DEFAULT_ROUTER_ID
+		config.RouterID = constants.DefaultRouterID
 	}
 	kaConfFileTemplate :=
 		`vrrp_instance K8S_APISERVER {
@@ -178,7 +178,7 @@ func writeKeepAlivedServiceFiles(config apis.VIPConfiguration) {
 	}
 }
 `
-	confFile := filepath.Join(constants.SYSTEMD_DIR, "keepalived.conf")
+	confFile := filepath.Join(constants.SystemdDir, "keepalived.conf")
 	writeTemplateIntoFile(kaConfFileTemplate, "vipConfFileTemplate", confFile, config)
 
 	kaSvcFileTemplate := `
@@ -202,6 +202,6 @@ WantedBy=multi-user.target
 	type KaServiceData struct {
 		ConfigFile, KeepAlivedImg string
 	}
-	kaServiceData := KaServiceData{confFile, constants.KEEPALIVED_IMG}
-	writeTemplateIntoFile(kaSvcFileTemplate, "kaSvcFileTemplate", filepath.Join(constants.SYSTEMD_DIR, "keepalived.service"), kaServiceData)
+	kaServiceData := KaServiceData{confFile, constants.KeepalivedImg}
+	writeTemplateIntoFile(kaSvcFileTemplate, "kaSvcFileTemplate", filepath.Join(constants.SystemdDir, "keepalived.service"), kaServiceData)
 }

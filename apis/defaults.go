@@ -15,7 +15,7 @@ func SetInitDefaults(config *InitConfiguration) {
 	SetMasterConfigurationNetworkingDefaultsWithNetworking(config)
 	// Third use the remainder of MasterConfiguration defaults
 	kubeadmv1alpha1.SetDefaults_MasterConfiguration(&config.MasterConfiguration)
-	config.MasterConfiguration.KubernetesVersion = constants.KUBERNETES_VERSION
+	config.MasterConfiguration.KubernetesVersion = constants.KubernetesVersion
 	config.MasterConfiguration.NoTaintMaster = true
 	config.MasterConfiguration.APIServerExtraArgs = map[string]string{
 		"service-node-port-range": constants.ServiceNodePortRange,
