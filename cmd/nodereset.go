@@ -28,7 +28,7 @@ var nodeCmdReset = &cobra.Command{
 
 func kubeadmReset() {
 	log.Printf("[nodeadm:reset] Invoking kubeadm reset")
-	deprecated.RunBestEffort(constants.BaseInstallDir, "kubeadm", "reset")
+	deprecated.RunBestEffort(constants.KubeVersionInstallDir, "kubeadm", "reset")
 }
 
 func cleanupKeepalived() {
