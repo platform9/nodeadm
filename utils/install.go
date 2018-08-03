@@ -202,6 +202,6 @@ WantedBy=multi-user.target
 	type KaServiceData struct {
 		ConfigFile, KeepAlivedImg string
 	}
-	kaServiceData := KaServiceData{confFile, constants.KeepalivedImg}
+	kaServiceData := KaServiceData{confFile, constants.KeepalivedImage}
 	writeTemplateIntoFile(kaSvcFileTemplate, "kaSvcFileTemplate", filepath.Join(constants.SystemdDir, "keepalived.service"), kaServiceData)
 }

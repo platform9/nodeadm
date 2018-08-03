@@ -7,7 +7,7 @@ import (
 )
 
 var DOCKER_IMAGES = []string{
-	constants.KeepalivedImg,
+	constants.KeepalivedImage,
 	fmt.Sprintf("k8s.gcr.io/kube-apiserver-amd64:%s", constants.KubernetesVersion),
 	fmt.Sprintf("k8s.gcr.io/kube-controller-manager-amd64:%s", constants.KubernetesVersion),
 	fmt.Sprintf("k8s.gcr.io/kube-scheduler-amd64:%s", constants.KubernetesVersion),

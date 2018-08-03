@@ -18,13 +18,13 @@ const (
 	ConfigDir            = "conf"
 	FlannelVersion       = "v0.10.0"
 	DefaultPodNetwork    = "10.244.0.0/16"
-	DefaultDnsIP         = "10.96.0.10"
+	DefaultDNSIP         = "10.96.0.10"
 	DefaultServiceSubnet = "10.96.0.0/12"
 	DefaultDNSDomain     = "cluster.local"
 	DefaultRouterID      = 42
 	KubeadmConfig        = "/tmp/kubeadm.yaml"
 	KubeDNSVersion       = "1.14.8"
-	KeepalivedImg        = "platform9/keepalived:v2.0.4"
+	KeepalivedImage      = "platform9/keepalived:v2.0.4"
 	CacheBaseDir         = "/var/cache/nodeadm/"
 	Execute              = 0744
 	Read                 = 0644
