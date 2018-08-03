@@ -49,14 +49,14 @@ var nodeCmdInit = &cobra.Command{
 		if err != nil {
 			log.Fatalf("Failed to marshal master config with err %v\n", err)
 		}
-		err = ioutil.WriteFile(constants.KUBEADM_CONFIG, masterConfig, constants.READ)
+		err = ioutil.WriteFile(constants.KubeadmConfig, masterConfig, constants.Read)
 		if err != nil {
-			log.Fatalf("Failed to write file %q with error %v\n", constants.KUBEADM_CONFIG, err)
+			log.Fatalf("Failed to write file %q with error %v\n", constants.KubeadmConfig, err)
 		}
 
 		utils.InstallMasterComponents(config)
 
-		kubeadmInit(constants.KUBEADM_CONFIG)
+		kubeadmInit(constants.KubeadmConfig)
 
 		log.Println("Applying workaround for https://github.com/kubernetes/kubeadm/issues/857")
 		if err := workarounds.EnsureKubeProxyRespectsHostoverride(); err != nil {
@@ -68,15 +68,15 @@ var nodeCmdInit = &cobra.Command{
 }
 
 func networkInit(config *apis.InitConfiguration) {
-	file := filepath.Join(constants.CONF_INSTALL_DIR, constants.FlannelManifestFilename)
+	file := filepath.Join(constants.ConfInstallDir, constants.FlannelManifestFilename)
 	log.Printf("Pod network %s\n", config.MasterConfiguration.Networking.PodSubnet)
-	utils.ReplaceString(file, constants.DEFAULT_POD_NETWORK, config.MasterConfiguration.Networking.PodSubnet)
-	deprecated.Run(constants.BASE_INSTALL_DIR, "sysctl", "net.bridge.bridge-nf-call-iptables=1")
-	deprecated.Run(constants.BASE_INSTALL_DIR, "kubectl", fmt.Sprintf("--kubeconfig=%s", constants.AdminKubeconfigFile), "apply", "-f", file)
+	utils.ReplaceString(file, constants.DefaultPodNetwork, config.MasterConfiguration.Networking.PodSubnet)
+	deprecated.Run(constants.BaseInstallDir, "sysctl", "net.bridge.bridge-nf-call-iptables=1")
+	deprecated.Run(constants.BaseInstallDir, "kubectl", fmt.Sprintf("--kubeconfig=%s", constants.AdminKubeconfigFile), "apply", "-f", file)
 }
 
 func kubeadmInit(config string) {
-	deprecated.Run(constants.BASE_INSTALL_DIR, "kubeadm", "init", "--config="+config)
+	deprecated.Run(constants.BaseInstallDir, "kubeadm", "init", "--config="+config)
 }
 
 func init() {

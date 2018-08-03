@@ -33,7 +33,7 @@ var nodeCmdJoin = &cobra.Command{
 }
 
 func kubeadmJoin(token, master, cahash string) {
-	deprecated.Run(constants.BASE_INSTALL_DIR, "kubeadm", "join", "--token", token, master, "--discovery-token-ca-cert-hash", cahash)
+	deprecated.Run(constants.BaseInstallDir, "kubeadm", "join", "--token", token, master, "--discovery-token-ca-cert-hash", cahash)
 }
 
 func init() {

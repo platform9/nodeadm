@@ -27,55 +27,55 @@ var NodeArtifact = []Artifact{
 	{
 		Name:     constants.KubeadmFilename,
 		Type:     "executable",
-		Upstream: fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/%s/bin/linux/amd64/", constants.KUBERNETES_VERSION),
-		Local:    filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME),
+		Upstream: fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/%s/bin/linux/amd64/", constants.KubernetesVersion),
+		Local:    filepath.Join(constants.CacheDir, constants.KubeDirName),
 	},
 	{
 		Name:     constants.KubectlFilename,
 		Type:     "executable",
-		Upstream: fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/%s/bin/linux/amd64/", constants.KUBERNETES_VERSION),
-		Local:    filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME),
+		Upstream: fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/%s/bin/linux/amd64/", constants.KubernetesVersion),
+		Local:    filepath.Join(constants.CacheDir, constants.KubeDirName),
 	},
 	{
 		Name:     constants.KubeletFilename,
 		Type:     "executable",
-		Upstream: fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/%s/bin/linux/amd64/", constants.KUBERNETES_VERSION),
-		Local:    filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME),
+		Upstream: fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/%s/bin/linux/amd64/", constants.KubernetesVersion),
+		Local:    filepath.Join(constants.CacheDir, constants.KubeDirName),
 	},
 	{
 		Name:     constants.KubeletSystemdUnitFilename,
 		Type:     "regular",
-		Upstream: fmt.Sprintf("https://raw.githubusercontent.com/kubernetes/kubernetes/%s/build/debs/", constants.KUBERNETES_VERSION),
-		Local:    filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME),
+		Upstream: fmt.Sprintf("https://raw.githubusercontent.com/kubernetes/kubernetes/%s/build/debs/", constants.KubernetesVersion),
+		Local:    filepath.Join(constants.CacheDir, constants.KubeDirName),
 	},
 	{
 		Name:     constants.KubeadmKubeletSystemdDropinFilename,
 		Type:     "regular",
-		Upstream: fmt.Sprintf("https://raw.githubusercontent.com/kubernetes/kubernetes/%s/build/debs/", constants.KUBERNETES_VERSION),
-		Local:    filepath.Join(constants.CACHE_DIR, constants.KUBE_DIR_NAME),
+		Upstream: fmt.Sprintf("https://raw.githubusercontent.com/kubernetes/kubernetes/%s/build/debs/", constants.KubernetesVersion),
+		Local:    filepath.Join(constants.CacheDir, constants.KubeDirName),
 	},
 	{
 		Name:     constants.CNIPluginsFilename,
 		Type:     "regular",
-		Upstream: fmt.Sprintf("https://github.com/containernetworking/plugins/releases/download/%s/", constants.CNI_VERSION),
-		Local:    filepath.Join(constants.CACHE_DIR, constants.CNI_DIR_NAME),
+		Upstream: fmt.Sprintf("https://github.com/containernetworking/plugins/releases/download/%s/", constants.CNIVersion),
+		Local:    filepath.Join(constants.CacheDir, constants.CNIDirName),
 	},
 	{
 		Name:     constants.FlannelManifestFilename,
 		Type:     "regular",
-		Upstream: fmt.Sprintf("https://raw.githubusercontent.com/coreos/flannel/%s/Documentation/", constants.FLANNEL_VERSION),
-		Local:    filepath.Join(constants.CACHE_DIR, constants.FLANNEL_DIR_NAME),
+		Upstream: fmt.Sprintf("https://raw.githubusercontent.com/coreos/flannel/%s/Documentation/", constants.FlannelVersion),
+		Local:    filepath.Join(constants.CacheDir, constants.FlannelDirName),
 	},
 }
 
 func loadAvailableImages(cli *client.Client) {
-	os.MkdirAll(constants.IMAGES_CACHE_DIR, constants.EXECUTE)
-	files, err := ioutil.ReadDir(constants.IMAGES_CACHE_DIR)
+	os.MkdirAll(constants.ImagesCacheDir, constants.Execute)
+	files, err := ioutil.ReadDir(constants.ImagesCacheDir)
 	if err != nil {
-		log.Printf("Failed to list files from dir %s skipping loading images with err %v\n", constants.IMAGES_CACHE_DIR, err)
+		log.Printf("Failed to list files from dir %s skipping loading images with err %v\n", constants.ImagesCacheDir, err)
 	}
 	for _, file := range files {
-		deprecated.Run("", "docker", "load", "-i", filepath.Join(constants.IMAGES_CACHE_DIR, file.Name()))
+		deprecated.Run("", "docker", "load", "-i", filepath.Join(constants.ImagesCacheDir, file.Name()))
 	}
 }
 
@@ -103,15 +103,15 @@ func PopulateCache() {
 		list, err = cli.ImageList(context.Background(), types.ImageListOptions{
 			Filters: nameFilter,
 		})
-		imageFile := filepath.Join(constants.IMAGES_CACHE_DIR, strings.Replace(list[0].ID, "sha256:", "", -1)+".tar")
+		imageFile := filepath.Join(constants.ImagesCacheDir, strings.Replace(list[0].ID, "sha256:", "", -1)+".tar")
 		deprecated.Run("", "docker", "save", image, "-o", imageFile)
 	}
 	for _, file := range NodeArtifact {
-		mode := constants.READ
+		mode := constants.Read
 		if file.Type == "executable" {
-			mode = constants.EXECUTE
+			mode = constants.Execute
 		}
-		os.MkdirAll(file.Local, constants.EXECUTE)
+		os.MkdirAll(file.Local, constants.Execute)
 		Download(filepath.Join(file.Local, file.Name), file.Upstream+file.Name, os.FileMode(mode))
 	}
 }
