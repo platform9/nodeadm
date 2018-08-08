@@ -25,21 +25,17 @@ const (
 	KubeadmConfig        = "/tmp/kubeadm.yaml"
 	KubeDNSVersion       = "1.14.8"
 	KeepalivedImage      = "platform9/keepalived:v2.0.4"
-	CacheBaseDir         = "/var/cache/nodeadm/"
+	CacheDir             = "/var/cache/nodeadm/"
 	Execute              = 0744
 	Read                 = 0644
 	ServiceNodePortRange = "80-32767"
 )
 
-var KubeDirName = "kubernetes-" + KubernetesVersion
-var CNIDirName = "cni-" + CNIVersion
-var FlannelDirName = "flannel-" + FlannelVersion
-var NodeadmDirName = "noedadm-" + KubernetesVersion
-
-var KubeVersionInstallDir = filepath.Join(BaseInstallDir, KubeDirName)
-var CniVersionInstallDir = filepath.Join(CNIBaseDir, CNIDirName)
+var KubeDirName = filepath.Join("kubernetes", KubernetesVersion)
+var FlannelDirName = filepath.Join("flannel", FlannelVersion)
+var CNIDirName = filepath.Join("cni", CNIVersion)
+var CniVersionInstallDir = filepath.Join(CNIBaseDir, CNIVersion)
 var ConfInstallDir = filepath.Join(BaseInstallDir, ConfigDir)
-var CacheDir = filepath.Join(CacheBaseDir, KubernetesVersion)
 var ImagesCacheDir = filepath.Join(CacheDir, "images")
 
 const (

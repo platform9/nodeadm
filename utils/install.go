@@ -92,14 +92,9 @@ func placeAndModifyNodeadmKubeletSystemdDropin(netConfig apis.Networking) {
 }
 
 func placeKubeComponents() {
-	err := os.MkdirAll(constants.KubeVersionInstallDir, constants.Execute)
-	if err != nil {
-		log.Fatalf("Failed to create dir %s with error %v\n", constants.KubeVersionInstallDir, err)
-	}
-	deprecated.Run("", "cp", filepath.Join(constants.CacheDir, constants.KubeDirName, "kubectl"), filepath.Join(constants.KubeVersionInstallDir, "kubectl"))
-	deprecated.Run("", "cp", filepath.Join(constants.CacheDir, constants.KubeDirName, "kubeadm"), filepath.Join(constants.KubeVersionInstallDir, "kubeadm"))
-	deprecated.Run("", "cp", filepath.Join(constants.CacheDir, constants.KubeDirName, "kubelet"), filepath.Join(constants.KubeVersionInstallDir, "kubelet"))
-	CreateSymLinks(constants.KubeVersionInstallDir, constants.BaseInstallDir, true)
+	deprecated.Run("", "cp", filepath.Join(constants.CacheDir, constants.KubeDirName, "kubectl"), filepath.Join(constants.BaseInstallDir, "kubectl"))
+	deprecated.Run("", "cp", filepath.Join(constants.CacheDir, constants.KubeDirName, "kubeadm"), filepath.Join(constants.BaseInstallDir, "kubeadm"))
+	deprecated.Run("", "cp", filepath.Join(constants.CacheDir, constants.KubeDirName, "kubelet"), filepath.Join(constants.BaseInstallDir, "kubelet"))
 }
 
 func placeCNIPlugin() {
