@@ -15,6 +15,8 @@ func SetInitDefaults(config *InitConfiguration) {
 	SetMasterConfigurationNetworkingDefaultsWithNetworking(config)
 	// Third use the remainder of MasterConfiguration defaults
 	kubeadmv1alpha1.SetDefaults_MasterConfiguration(&config.MasterConfiguration)
+	config.MasterConfiguration.Kind = "MasterConfiguration"
+	config.MasterConfiguration.APIVersion = "kubeadm.k8s.io/v1alpha1"
 	config.MasterConfiguration.KubernetesVersion = constants.KubernetesVersion
 	config.MasterConfiguration.NoTaintMaster = true
 	config.MasterConfiguration.APIServerExtraArgs = map[string]string{
