@@ -158,8 +158,14 @@ func writeKeepAlivedServiceFiles(config apis.VIPConfiguration) {
 	if config.RouterID == 0 {
 		config.RouterID = constants.DefaultRouterID
 	}
-	kaConfFileTemplate :=
-		`vrrp_instance K8S_APISERVER {
+	kaConfFileTemplate := `vrrp_script chk_apiserver {
+	script "/usr/bin/wget -q -O - https://127.0.0.1:6443/healthz"
+	interval 1
+	fall 2
+	rise 2
+}
+
+vrrp_instance K8S_APISERVER {
 	interface {{.NetworkInterface}}
 	state BACKUP
 	virtual_router_id {{.RouterID}}
@@ -171,8 +177,10 @@ func writeKeepAlivedServiceFiles(config apis.VIPConfiguration) {
 	virtual_ipaddress {
 		{{.IP}}
 	}
-}
-`
+	track_script {
+		chk_apiserver
+	}
+}`
 	confFile := filepath.Join(constants.SystemdDir, "keepalived.conf")
 	writeTemplateIntoFile(kaConfFileTemplate, "vipConfFileTemplate", confFile, config)
 
