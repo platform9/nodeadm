@@ -80,12 +80,16 @@ func placeAndModifyNodeadmKubeletSystemdDropin(netConfig apis.Networking) {
 		ClusterDNS       string
 		ClusterDomain    string
 		HostnameOverride string
+		KubeAPIQPS       int
+		KubeAPIBurst     int
 	}{
 		FailSwapOn:       constants.KubeletFailSwapOn,
 		MaxPods:          constants.KubeletMaxPods,
 		ClusterDNS:       dnsIP.String(),
 		ClusterDomain:    netConfig.DNSDomain,
 		HostnameOverride: hostnameOverride,
+		KubeAPIQPS:       constants.KubeletKubeAPIQPS,
+		KubeAPIBurst:     constants.KubeletKubeAPIBurst,
 	}
 
 	writeTemplateIntoFile(constants.NodeadmKubeletSystemdDropinTemplate, "nodeadm-kubelet-systemd-dropin", confFile, data)
