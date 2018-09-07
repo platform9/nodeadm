@@ -158,7 +158,11 @@ func writeKeepAlivedServiceFiles(config apis.VIPConfiguration) {
 	if config.RouterID == 0 {
 		config.RouterID = constants.DefaultRouterID
 	}
-	kaConfFileTemplate := `vrrp_script chk_apiserver {
+	kaConfFileTemplate := `global_defs {
+	enable_script_security
+}
+
+vrrp_script chk_apiserver {
 	script "/usr/bin/wget -q -O - https://127.0.0.1:6443/healthz"
 	interval 1
 	fall 2
