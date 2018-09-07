@@ -31,6 +31,13 @@ const (
 	ServiceNodePortRange = "80-32767"
 )
 
+const (
+	VRRPScriptInterval = 10
+	VRRPScriptRise     = 2
+	VRRPScriptFall     = 8
+	WgetTimeout        = 10
+)
+
 var KubeDirName = filepath.Join("kubernetes", KubernetesVersion)
 var FlannelDirName = filepath.Join("flannel", FlannelVersion)
 var CNIDirName = filepath.Join("cni", CNIVersion)

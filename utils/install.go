@@ -160,35 +160,49 @@ func writeKeepAlivedServiceFiles(config *apis.InitConfiguration) {
 	if config.VIPConfiguration.RouterID == 0 {
 		config.VIPConfiguration.RouterID = constants.DefaultRouterID
 	}
+
+	configTemplateVals := struct {
+		InitConfig         *apis.InitConfiguration
+		VRRPScriptInterval int
+		VRRPScriptRise     int
+		VRRPScriptFall     int
+		WgetTimeout        int
+	}{
+		InitConfig:         config,
+		VRRPScriptInterval: constants.VRRPScriptInterval,
+		VRRPScriptRise:     constants.VRRPScriptRise,
+		VRRPScriptFall:     constants.VRRPScriptFall,
+		WgetTimeout:        constants.WgetTimeout,
+	}
 	kaConfFileTemplate := `global_defs {
 	enable_script_security
 }
 
 vrrp_script chk_apiserver {
-	script "/usr/bin/wget -T 10 -qO - https://127.0.0.1:{{.MasterConfiguration.API.BindPort}}/healthz > /dev/null 2>&1"
-	interval 10
-	fall 8
-	rise 2
+	script "/usr/bin/wget -T {{.WgetTimeout}} -qO - https://127.0.0.1:{{.InitConfig.MasterConfiguration.API.BindPort}}/healthz > /dev/null 2>&1"
+	interval {{.VRRPScriptInterval}}
+	fall {{.VRRPScriptFall}}
+	rise {{.VRRPScriptRise}}
 }
 
 vrrp_instance K8S_APISERVER {
-	interface {{.VIPConfiguration.NetworkInterface}}
+	interface {{.InitConfig.VIPConfiguration.NetworkInterface}}
 	state BACKUP
-	virtual_router_id {{.VIPConfiguration.RouterID}}
+	virtual_router_id {{.InitConfig.VIPConfiguration.RouterID}}
 	nopreempt
 	authentication {
 		auth_type AH
 		auth_pass ourownpassword
 	}
 	virtual_ipaddress {
-		{{.VIPConfiguration.IP}}
+		{{.InitConfig.VIPConfiguration.IP}}
 	}
 	track_script {
 		chk_apiserver
 	}
 }`
 	confFile := filepath.Join(constants.SystemdDir, "keepalived.conf")
-	writeTemplateIntoFile(kaConfFileTemplate, "vipConfFileTemplate", confFile, config)
+	writeTemplateIntoFile(kaConfFileTemplate, "vipConfFileTemplate", confFile, configTemplateVals)
 
 	kaSvcFileTemplate := `
 [Unit]
