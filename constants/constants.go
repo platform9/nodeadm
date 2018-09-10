@@ -59,13 +59,15 @@ var CNIPluginsFilename = fmt.Sprintf("cni-plugins-amd64-%s.tgz", CNIVersion)
 
 const (
 	// TODO(dlipovetsky) Move fields to configuration
-	KubeletFailSwapOn = false
-	KubeletMaxPods    = 500
+	KubeletFailSwapOn   = false
+	KubeletMaxPods      = 500
+	KubeletKubeAPIQPS   = 20
+	KubeletKubeAPIBurst = 40
 
 	NodeadmKubeletSystemdDropinFilename = "20-nodeadm.conf"
 	NodeadmKubeletSystemdDropinTemplate = `[Service]
 Environment="KUBELET_DNS_ARGS=--cluster-dns={{ .ClusterDNS }} --cluster-domain={{ .ClusterDomain }}"
-Environment="KUBELET_EXTRA_ARGS=--max-pods={{ .MaxPods }} --fail-swap-on={{ .FailSwapOn }} --hostname-override={{ .HostnameOverride }}"
+Environment="KUBELET_EXTRA_ARGS=--max-pods={{ .MaxPods }} --fail-swap-on={{ .FailSwapOn }} --hostname-override={{ .HostnameOverride }} --kube-api-qps={{ .KubeAPIQPS }} --kube-api-burst={{ .KubeAPIBurst }}"
 `
 )
 
