@@ -183,7 +183,7 @@ func writeKeepAlivedServiceFiles(config *apis.InitConfiguration) {
 }
 
 vrrp_script chk_apiserver {
-	script "/usr/bin/wget -T {{.WgetTimeout}} -qO - https://127.0.0.1:{{.InitConfig.MasterConfiguration.API.BindPort}}/healthz > /dev/null 2>&1"
+	script "/usr/bin/wget -T {{.WgetTimeout}} -qO /dev/null https://127.0.0.1:{{.InitConfig.MasterConfiguration.API.BindPort}}/healthz"
 	interval {{.VRRPScriptInterval}}
 	fall {{.VRRPScriptFall}}
 	rise {{.VRRPScriptRise}}
