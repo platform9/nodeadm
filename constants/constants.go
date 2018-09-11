@@ -34,8 +34,8 @@ const (
 const (
 	VRRPScriptInterval = 10
 	VRRPScriptRise     = 2
-	VRRPScriptFall     = 8
-	WgetTimeout        = 10
+	VRRPScriptFall     = 6
+	WgetTimeout        = 8
 )
 
 var KubeDirName = filepath.Join("kubernetes", KubernetesVersion)

@@ -140,8 +140,6 @@ func writeTemplateIntoFile(tmpl, name, file string, data interface{}) {
 }
 
 func writeKeepAlivedServiceFiles(config *apis.InitConfiguration) {
-	//VIPConfig = config.VIPConfiguration
-	//masterConf = config.MasterConfiguration
 	log.Printf("Vip configuration as parsed from the file %v\n", config)
 	if len(config.VIPConfiguration.IP) == 0 {
 		ip, err := netutil.ChooseHostInterface()
