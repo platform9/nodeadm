@@ -7,6 +7,7 @@ import (
 
 	"github.com/platform9/nodeadm/constants"
 	"github.com/platform9/nodeadm/deprecated"
+	"github.com/platform9/nodeadm/systemd"
 	"github.com/platform9/nodeadm/utils"
 	"github.com/spf13/cobra"
 )
@@ -33,20 +34,27 @@ func kubeadmReset() {
 
 func cleanupKeepalived() {
 	log.Printf("[nodeadm:reset] Stopping & Removing Keepalived")
-	utils.StopAndDisableService("keepalived.service")
+	systemd.Disable("keepalived.service")
+	systemd.Stop("keepalived.service")
 	os.RemoveAll(filepath.Join(constants.SystemdDir, "keepalived.service"))
 	os.RemoveAll(filepath.Join(constants.SystemdDir, "keepalived.conf"))
 }
 
 func cleanupKubelet() {
 	log.Printf("[nodeadm:reset] Stopping & Removing kubelet")
-	utils.StopAndDisableService("kubelet.service")
+	systemd.Disable("kubelet.service")
+	systemd.Stop("kubelet.service")
+	failed, err := systemd.Failed("kubelet.service")
+	if err != nil {
+		log.Fatalf("Failed to check if kubelet service failed: %v", err)
+	}
+	if failed {
+		if err := systemd.ResetFailed("kubelet.service"); err != nil {
+			log.Fatalf("Failed to reset failed kubelet service: %v", err)
+		}
+	}
 	os.RemoveAll(filepath.Join(constants.SystemdDir, "kubelet.service"))
 	os.RemoveAll(filepath.Join(constants.SystemdDir, "kubelet.service.d"))
-	err := utils.ResetFailedService("kubelet")
-	if err != nil {
-		log.Fatalf("Failed to reset failed kubelet service %v\n", err)
-	}
 }
 
 func cleanupBinaries() {
