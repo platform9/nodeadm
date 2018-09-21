@@ -27,10 +27,8 @@ const (
 	KeepalivedImage      = "platform9/keepalived:v2.0.4"
 	CacheDir             = "/var/cache/nodeadm/"
 	Execute              = 0744
-	Read                 = 0644
-	ServiceNodePortRange = "80-32767"
-	// TODO: Add PodPriority when introduced in kubeadm
-	FeatureGates = "ExperimentalCriticalPodAnnotation=true"
+	Read                 = 0644 // TODO: Add PodPriority when introduced in kubeadm
+	FeatureGates         = "ExperimentalCriticalPodAnnotation=true"
 )
 
 const (
@@ -61,12 +59,7 @@ var CNIPluginsFilename = fmt.Sprintf("cni-plugins-amd64-%s.tgz", CNIVersion)
 
 const (
 	// TODO(dlipovetsky) Move fields to configuration
-	KubeletFailSwapOn   = false
-	KubeletMaxPods      = 500
-	KubeletKubeAPIQPS   = 20
-	KubeletKubeAPIBurst = 40
-	KubeletEvictionHard = "memory.available<600Mi,nodefs.available<10%"
-
+	KubeletEvictionHard                 = "memory.available<600Mi,nodefs.available<10%"
 	NodeadmKubeletSystemdDropinFilename = "20-nodeadm.conf"
 	NodeadmKubeletSystemdDropinTemplate = `[Service]
 Environment="KUBELET_DNS_ARGS=--cluster-dns={{ .ClusterDNS }} --cluster-domain={{ .ClusterDomain }}"

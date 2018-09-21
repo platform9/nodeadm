@@ -19,14 +19,12 @@ func SetInitDefaults(config *InitConfiguration) {
 	config.MasterConfiguration.APIVersion = "kubeadm.k8s.io/v1alpha1"
 	config.MasterConfiguration.KubernetesVersion = constants.KubernetesVersion
 	config.MasterConfiguration.NoTaintMaster = true
-
 	addOrAppend(&config.MasterConfiguration.APIServerExtraArgs, "feature-gates", constants.FeatureGates)
 	addOrAppend(&config.MasterConfiguration.ControllerManagerExtraArgs, "feature-gates", constants.FeatureGates)
 	addOrAppend(&config.MasterConfiguration.SchedulerExtraArgs, "feature-gates", constants.FeatureGates)
-
 }
 
-// SetInitDynamicDefaults sets defaults derived  at runtime
+// SetInitDynamicDefaults sets defaults derived at runtime
 func SetInitDynamicDefaults(config *InitConfiguration) error {
 	nodeName, err := constants.GetHostnameOverride()
 	if err != nil {
