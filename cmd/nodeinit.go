@@ -76,7 +76,7 @@ func networkInit(config *apis.InitConfiguration) {
 }
 
 func kubeadmInit(config string) {
-	deprecated.Run(constants.BaseInstallDir, "kubeadm", "init", "--config="+config)
+	deprecated.Run(constants.BaseInstallDir, "kubeadm", "init", "--ignore-preflight-errors=all", "--config="+config)
 }
 
 func init() {
