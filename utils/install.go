@@ -15,21 +15,39 @@ import (
 	"github.com/platform9/nodeadm/apis"
 	"github.com/platform9/nodeadm/constants"
 	"github.com/platform9/nodeadm/deprecated"
+	"github.com/platform9/nodeadm/systemd"
 	netutil "k8s.io/apimachinery/pkg/util/net"
 )
 
 func InstallMasterComponents(config *apis.InitConfiguration) {
 	PopulateCache()
+
 	PlaceComponentsFromCache(config.Networking)
-	EnableAndStartService("kubelet.service")
+	systemd.Enable("kubelet.service")
+	systemd.Start("kubelet.service")
+
+	if err := systemd.StopIfActive("keepalived.service"); err != nil {
+		log.Fatalf("Failed to install keepalived service: %v", err)
+	}
+	if err := systemd.DisableIfEnabled("keepalived.service"); err != nil {
+		log.Fatalf("Failed to install keepalived service: %v", err)
+	}
 	writeKeepAlivedServiceFiles(config)
-	EnableAndStartService("keepalived.service")
+	if err := systemd.Enable("keepalived.service"); err != nil {
+		log.Fatalf("Failed to install keepalived service: %v", err)
+	}
+	if err := systemd.Start("keepalived.service"); err != nil {
+		log.Fatalf("Failed to install keepalived service: %v", err)
+	}
+
 }
 
 func InstallNodeComponents(config *apis.JoinConfiguration) {
 	PopulateCache()
+
 	PlaceComponentsFromCache(config.Networking)
-	EnableAndStartService("kubelet.service")
+	systemd.Enable("kubelet.service")
+	systemd.Start("kubelet.service")
 }
 
 func PlaceComponentsFromCache(netConfig apis.Networking) {
