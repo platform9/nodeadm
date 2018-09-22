@@ -22,9 +22,19 @@ import (
 func InstallMasterComponents(config *apis.InitConfiguration) {
 	PopulateCache()
 
+	if err := systemd.StopIfActive("kubelet.service"); err != nil {
+		log.Fatalf("Failed to install kubelet service: %v", err)
+	}
+	if err := systemd.DisableIfEnabled("kubelet.service"); err != nil {
+		log.Fatalf("Failed to install kubelet service: %v", err)
+	}
 	PlaceComponentsFromCache(config.Networking)
-	systemd.Enable("kubelet.service")
-	systemd.Start("kubelet.service")
+	if err := systemd.Enable("kubelet.service"); err != nil {
+		log.Fatalf("Failed to install kubelet service: %v", err)
+	}
+	if err := systemd.Start("kubelet.service"); err != nil {
+		log.Fatalf("Failed to install kubelet service: %v", err)
+	}
 
 	if err := systemd.StopIfActive("keepalived.service"); err != nil {
 		log.Fatalf("Failed to install keepalived service: %v", err)
@@ -45,9 +55,19 @@ func InstallMasterComponents(config *apis.InitConfiguration) {
 func InstallNodeComponents(config *apis.JoinConfiguration) {
 	PopulateCache()
 
+	if err := systemd.StopIfActive("kubelet.service"); err != nil {
+		log.Fatalf("Failed to install kubelet service: %v", err)
+	}
+	if err := systemd.DisableIfEnabled("kubelet.service"); err != nil {
+		log.Fatalf("Failed to install kubelet service: %v", err)
+	}
 	PlaceComponentsFromCache(config.Networking)
-	systemd.Enable("kubelet.service")
-	systemd.Start("kubelet.service")
+	if err := systemd.Enable("kubelet.service"); err != nil {
+		log.Fatalf("Failed to install kubelet service: %v", err)
+	}
+	if err := systemd.Start("kubelet.service"); err != nil {
+		log.Fatalf("Failed to install kubelet service: %v", err)
+	}
 }
 
 func PlaceComponentsFromCache(netConfig apis.Networking) {

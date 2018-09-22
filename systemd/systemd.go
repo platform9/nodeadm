@@ -154,3 +154,31 @@ func Failed(unit string) (bool, error) {
 	// We shouldn't hit this point but this is required.
 	return false, nil
 }
+
+// DisableIfEnabled disables a unit if it is enabled
+func DisableIfEnabled(unit string) error {
+	enabled, err := Enabled(unit)
+	if err != nil {
+		return fmt.Errorf("unable to check if unit %s is enabled: %v", unit, err)
+	}
+	if enabled {
+		if err := Disable(unit); err != nil {
+			return fmt.Errorf("unable to disable unit %s: %v", unit, err)
+		}
+	}
+	return nil
+}
+
+// StopIfActive stops a unit if it is active
+func StopIfActive(unit string) error {
+	active, err := Active(unit)
+	if err != nil {
+		return fmt.Errorf("unable to check if unit %s is active: %v", unit, err)
+	}
+	if active {
+		if err := Stop(unit); err != nil {
+			return fmt.Errorf("unable to stop unit %s: %v", unit, err)
+		}
+	}
+	return nil
+}
