@@ -29,6 +29,7 @@ func reloadSystemd() error {
 	return nil
 }
 
+// Start starts a systemd unit
 func Start(unit string) error {
 	// Before we try to start any unit, make sure that systemd is ready
 	if err := reloadSystemd(); err != nil {
@@ -41,6 +42,7 @@ func Start(unit string) error {
 	return nil
 }
 
+// Stop stops a systemd unit
 func Stop(unit string) error {
 	// Before we try to start any unit, make sure that systemd is ready
 	if err := reloadSystemd(); err != nil {
@@ -53,6 +55,7 @@ func Stop(unit string) error {
 	return nil
 }
 
+// Enable enables a systemd unit
 func Enable(unit string) error {
 	// Before we try to enable any unit, make sure that systemd is ready
 	if err := reloadSystemd(); err != nil {
@@ -65,6 +68,7 @@ func Enable(unit string) error {
 	return nil
 }
 
+// Disable disables a systemd unit
 func Disable(unit string) error {
 	// Before we try to disable any unit, make sure that systemd is ready
 	if err := reloadSystemd(); err != nil {
@@ -77,7 +81,7 @@ func Disable(unit string) error {
 	return nil
 }
 
-// EnableAndStartUnit enables and starts the etcd unit
+// EnableAndStartUnit enables and starts a systemd unit
 func EnableAndStartUnit(unit string) error {
 	if err := Enable(unit); err != nil {
 		return err
@@ -85,7 +89,7 @@ func EnableAndStartUnit(unit string) error {
 	return Start(unit)
 }
 
-// DisableAndStopUnit disables and stops the etcd unit
+// DisableAndStopUnit disables and stops a systemd unit
 func DisableAndStopUnit(unit string) error {
 	if err := Disable(unit); err != nil {
 		return err
@@ -93,7 +97,7 @@ func DisableAndStopUnit(unit string) error {
 	return Stop(unit)
 }
 
-// Active checks if the systemd unit is active
+// Active checks if a systemd unit is active
 func Active(unit string) (bool, error) {
 	args := []string{"is-active", unit}
 	if err := exec.Command("systemctl", args...).Run(); err != nil {
@@ -109,7 +113,7 @@ func Active(unit string) (bool, error) {
 	return true, nil
 }
 
-// Enabled checks if the systemd unit is enabled
+// Enabled checks if a systemd unit is enabled
 func Enabled(unit string) (bool, error) {
 	args := []string{"is-enabled", unit}
 	if err := exec.Command("systemctl", args...).Run(); err != nil {
@@ -125,6 +129,7 @@ func Enabled(unit string) (bool, error) {
 	return true, nil
 }
 
+// ResetFailed resets the state of a failed systemd unit
 func ResetFailed(unit string) error {
 	args := []string{"reset-failed", unit}
 	if err := exec.Command("systemctl", args...).Run(); err != nil {
@@ -133,6 +138,7 @@ func ResetFailed(unit string) error {
 	return nil
 }
 
+// Failed checks if a systemd unit is in a failed state
 func Failed(unit string) (bool, error) {
 	args := []string{"is-failed", unit}
 	out, err := exec.Command("systemctl", args...).CombinedOutput()
@@ -155,7 +161,7 @@ func Failed(unit string) (bool, error) {
 	return false, nil
 }
 
-// DisableIfEnabled disables a unit if it is enabled
+// DisableIfEnabled disables a systemd unit if it is enabled
 func DisableIfEnabled(unit string) error {
 	enabled, err := Enabled(unit)
 	if err != nil {
@@ -169,7 +175,7 @@ func DisableIfEnabled(unit string) error {
 	return nil
 }
 
-// StopIfActive stops a unit if it is active
+// StopIfActive stops a systemd unit if it is active
 func StopIfActive(unit string) error {
 	active, err := Active(unit)
 	if err != nil {
