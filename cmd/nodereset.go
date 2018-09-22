@@ -34,16 +34,24 @@ func kubeadmReset() {
 
 func cleanupKeepalived() {
 	log.Printf("[nodeadm:reset] Stopping & Removing Keepalived")
-	systemd.Disable("keepalived.service")
-	systemd.Stop("keepalived.service")
+	if err := systemd.StopIfActive("keepalived.service"); err != nil {
+		log.Fatalf("Failed to stop keepalived service: %v", err)
+	}
+	if err := systemd.DisableIfEnabled("keepalived.service"); err != nil {
+		log.Fatalf("Failed to disable keepalived service: %v", err)
+	}
 	os.RemoveAll(filepath.Join(constants.SystemdDir, "keepalived.service"))
 	os.RemoveAll(filepath.Join(constants.SystemdDir, "keepalived.conf"))
 }
 
 func cleanupKubelet() {
 	log.Printf("[nodeadm:reset] Stopping & Removing kubelet")
-	systemd.Disable("kubelet.service")
-	systemd.Stop("kubelet.service")
+	if err := systemd.StopIfActive("kubelet.service"); err != nil {
+		log.Fatalf("Failed to stop kubelet service: %v", err)
+	}
+	if err := systemd.DisableIfEnabled("kubelet.service"); err != nil {
+		log.Fatalf("Failed to disable kubelet service: %v", err)
+	}
 	failed, err := systemd.Failed("kubelet.service")
 	if err != nil {
 		log.Fatalf("Failed to check if kubelet service failed: %v", err)
