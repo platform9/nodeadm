@@ -29,6 +29,8 @@ const (
 	Execute              = 0744
 	Read                 = 0644
 	ServiceNodePortRange = "80-32767"
+	// TODO: Remove when PodPriority is introduced in kubeadm
+	FeatureGates = "ExperimentalCriticalPodAnnotation=true"
 )
 
 const (
@@ -63,11 +65,12 @@ const (
 	KubeletMaxPods      = 500
 	KubeletKubeAPIQPS   = 20
 	KubeletKubeAPIBurst = 40
+	KubeletEvictionHard = "memory.available<600Mi,nodefs.available<10%"
 
 	NodeadmKubeletSystemdDropinFilename = "20-nodeadm.conf"
 	NodeadmKubeletSystemdDropinTemplate = `[Service]
 Environment="KUBELET_DNS_ARGS=--cluster-dns={{ .ClusterDNS }} --cluster-domain={{ .ClusterDomain }}"
-Environment="KUBELET_EXTRA_ARGS=--max-pods={{ .MaxPods }} --fail-swap-on={{ .FailSwapOn }} --hostname-override={{ .HostnameOverride }} --kube-api-qps={{ .KubeAPIQPS }} --kube-api-burst={{ .KubeAPIBurst }}"
+Environment="KUBELET_EXTRA_ARGS=--max-pods={{ .MaxPods }} --fail-swap-on={{ .FailSwapOn }} --hostname-override={{ .HostnameOverride }} --kube-api-qps={{ .KubeAPIQPS }} --kube-api-burst={{ .KubeAPIBurst }} --feature-gates={{ .FeatureGates}} --eviction-hard={{ .EvictionHard }}"
 `
 )
 

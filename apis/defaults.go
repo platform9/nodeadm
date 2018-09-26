@@ -21,6 +21,13 @@ func SetInitDefaults(config *InitConfiguration) {
 	config.MasterConfiguration.NoTaintMaster = true
 	config.MasterConfiguration.APIServerExtraArgs = map[string]string{
 		"service-node-port-range": constants.ServiceNodePortRange,
+		"feature-gates":           constants.FeatureGates,
+	}
+	config.MasterConfiguration.ControllerManagerExtraArgs = map[string]string{
+		"feature-gates": constants.FeatureGates,
+	}
+	config.MasterConfiguration.SchedulerExtraArgs = map[string]string{
+		"feature-gates": constants.FeatureGates,
 	}
 
 }

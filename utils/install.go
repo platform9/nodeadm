@@ -82,6 +82,8 @@ func placeAndModifyNodeadmKubeletSystemdDropin(netConfig apis.Networking) {
 		HostnameOverride string
 		KubeAPIQPS       int
 		KubeAPIBurst     int
+		EvictionHard     string
+		FeatureGates     string
 	}{
 		FailSwapOn:       constants.KubeletFailSwapOn,
 		MaxPods:          constants.KubeletMaxPods,
@@ -90,6 +92,8 @@ func placeAndModifyNodeadmKubeletSystemdDropin(netConfig apis.Networking) {
 		HostnameOverride: hostnameOverride,
 		KubeAPIQPS:       constants.KubeletKubeAPIQPS,
 		KubeAPIBurst:     constants.KubeletKubeAPIBurst,
+		EvictionHard:     constants.KubeletEvictionHard,
+		FeatureGates:     constants.FeatureGates,
 	}
 
 	writeTemplateIntoFile(constants.NodeadmKubeletSystemdDropinTemplate, "nodeadm-kubelet-systemd-dropin", confFile, data)
@@ -221,6 +225,7 @@ ExecStartPre=-/usr/bin/docker kill vip
 ExecStartPre=-/usr/bin/docker rm vip
 ExecStop=/usr/bin/docker stop vip
 Restart=on-failure
+MemoryLow=10M
 [Install]
 WantedBy=multi-user.target
 	`
