@@ -19,15 +19,47 @@ func SetInitDefaults(config *InitConfiguration) {
 	config.MasterConfiguration.APIVersion = "kubeadm.k8s.io/v1alpha1"
 	config.MasterConfiguration.KubernetesVersion = constants.KubernetesVersion
 	config.MasterConfiguration.NoTaintMaster = true
-	config.MasterConfiguration.APIServerExtraArgs = map[string]string{
-		"service-node-port-range": constants.ServiceNodePortRange,
-		"feature-gates":           constants.FeatureGates,
+
+	if config.MasterConfiguration.APIServerExtraArgs == nil {
+		config.MasterConfiguration.APIServerExtraArgs = map[string]string{
+			"feature-gates": constants.FeatureGates,
+		}
+	} else {
+		prevFeatureGates := config.MasterConfiguration.APIServerExtraArgs["feature-gates"]
+		if prevFeatureGates == "" {
+			config.MasterConfiguration.APIServerExtraArgs["feature-gates"] = constants.FeatureGates
+		} else {
+			featureGates := prevFeatureGates + "," + constants.FeatureGates
+			config.MasterConfiguration.APIServerExtraArgs["feature-gates"] = featureGates
+		}
 	}
-	config.MasterConfiguration.ControllerManagerExtraArgs = map[string]string{
-		"feature-gates": constants.FeatureGates,
+
+	if config.MasterConfiguration.ControllerManagerExtraArgs == nil {
+		config.MasterConfiguration.ControllerManagerExtraArgs = map[string]string{
+			"feature-gates": constants.FeatureGates,
+		}
+	} else {
+		prevFeatureGates := config.MasterConfiguration.ControllerManagerExtraArgs["feature-gates"]
+		if prevFeatureGates == "" {
+
+		} else {
+			featureGates := prevFeatureGates + "," + constants.FeatureGates
+			config.MasterConfiguration.ControllerManagerExtraArgs["feature-gates"] = featureGates
+		}
 	}
-	config.MasterConfiguration.SchedulerExtraArgs = map[string]string{
-		"feature-gates": constants.FeatureGates,
+
+	if config.MasterConfiguration.SchedulerExtraArgs == nil {
+		config.MasterConfiguration.SchedulerExtraArgs = map[string]string{
+			"feature-gates": constants.FeatureGates,
+		}
+	} else {
+		prevFeatureGates := config.MasterConfiguration.SchedulerExtraArgs["feature-gates"]
+		if prevFeatureGates == "" {
+			config.MasterConfiguration.SchedulerExtraArgs["feature-gates"] = constants.FeatureGates
+		} else {
+			featureGates := prevFeatureGates + "," + constants.FeatureGates
+			config.MasterConfiguration.SchedulerExtraArgs["feature-gates"] = featureGates
+		}
 	}
 
 }

@@ -29,7 +29,7 @@ const (
 	Execute              = 0744
 	Read                 = 0644
 	ServiceNodePortRange = "80-32767"
-	// TODO: Remove when PodPriority is introduced in kubeadm
+	// TODO: Add PodPriority when introduced in kubeadm
 	FeatureGates = "ExperimentalCriticalPodAnnotation=true"
 )
 
