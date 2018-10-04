@@ -20,47 +20,9 @@ func SetInitDefaults(config *InitConfiguration) {
 	config.MasterConfiguration.KubernetesVersion = constants.KubernetesVersion
 	config.MasterConfiguration.NoTaintMaster = true
 
-	if config.MasterConfiguration.APIServerExtraArgs == nil {
-		config.MasterConfiguration.APIServerExtraArgs = map[string]string{
-			"feature-gates": constants.FeatureGates,
-		}
-	} else {
-		prevFeatureGates := config.MasterConfiguration.APIServerExtraArgs["feature-gates"]
-		if prevFeatureGates == "" {
-			config.MasterConfiguration.APIServerExtraArgs["feature-gates"] = constants.FeatureGates
-		} else {
-			featureGates := prevFeatureGates + "," + constants.FeatureGates
-			config.MasterConfiguration.APIServerExtraArgs["feature-gates"] = featureGates
-		}
-	}
-
-	if config.MasterConfiguration.ControllerManagerExtraArgs == nil {
-		config.MasterConfiguration.ControllerManagerExtraArgs = map[string]string{
-			"feature-gates": constants.FeatureGates,
-		}
-	} else {
-		prevFeatureGates := config.MasterConfiguration.ControllerManagerExtraArgs["feature-gates"]
-		if prevFeatureGates == "" {
-
-		} else {
-			featureGates := prevFeatureGates + "," + constants.FeatureGates
-			config.MasterConfiguration.ControllerManagerExtraArgs["feature-gates"] = featureGates
-		}
-	}
-
-	if config.MasterConfiguration.SchedulerExtraArgs == nil {
-		config.MasterConfiguration.SchedulerExtraArgs = map[string]string{
-			"feature-gates": constants.FeatureGates,
-		}
-	} else {
-		prevFeatureGates := config.MasterConfiguration.SchedulerExtraArgs["feature-gates"]
-		if prevFeatureGates == "" {
-			config.MasterConfiguration.SchedulerExtraArgs["feature-gates"] = constants.FeatureGates
-		} else {
-			featureGates := prevFeatureGates + "," + constants.FeatureGates
-			config.MasterConfiguration.SchedulerExtraArgs["feature-gates"] = featureGates
-		}
-	}
+	addOrAppend(&config.MasterConfiguration.APIServerExtraArgs, "feature-gates", constants.FeatureGates)
+	addOrAppend(&config.MasterConfiguration.ControllerManagerExtraArgs, "feature-gates", constants.FeatureGates)
+	addOrAppend(&config.MasterConfiguration.SchedulerExtraArgs, "feature-gates", constants.FeatureGates)
 
 }
 
@@ -100,5 +62,21 @@ func SetMasterConfigurationNetworkingDefaultsWithNetworking(config *InitConfigur
 	}
 	if config.MasterConfiguration.Networking.DNSDomain == "" {
 		config.MasterConfiguration.Networking.DNSDomain = config.Networking.DNSDomain
+	}
+}
+
+func addOrAppend(extraArgs *map[string]string, key string, value string) {
+	// Create a new map if it doesn't exist.
+	if *extraArgs == nil {
+		*extraArgs = make(map[string]string)
+	}
+	// Add the key with the value if it doesn't exist. Otherwise, append the value
+	// to the pre-existing values.
+	prevFeatureGates := (*extraArgs)[key]
+	if prevFeatureGates == "" {
+		(*extraArgs)[key] = value
+	} else {
+		featureGates := prevFeatureGates + "," + value
+		(*extraArgs)[key] = featureGates
 	}
 }
