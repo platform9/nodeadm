@@ -11,6 +11,7 @@ import (
 	"text/template"
 
 	kubeadmconstants "k8s.io/kubernetes/cmd/kubeadm/app/constants"
+	kubeletconfigv1beta1 "k8s.io/kubernetes/pkg/kubelet/apis/kubeletconfig/v1beta1"
 
 	"github.com/platform9/nodeadm/apis"
 	"github.com/platform9/nodeadm/constants"
@@ -21,14 +22,16 @@ import (
 
 func InstallMasterComponents(config *apis.InitConfiguration) {
 	PopulateCache()
-
+	placeKubeComponents()
+	placeCNIPlugin()
 	if err := systemd.StopIfActive("kubelet.service"); err != nil {
 		log.Fatalf("Failed to install kubelet service: %v", err)
 	}
 	if err := systemd.DisableIfEnabled("kubelet.service"); err != nil {
 		log.Fatalf("Failed to install kubelet service: %v", err)
 	}
-	PlaceComponentsFromCache(config.Networking)
+	placeKubeletSystemAndDropinFiles(config.Networking, config.Kubelet)
+	placeNetworkConfig()
 	if err := systemd.Enable("kubelet.service"); err != nil {
 		log.Fatalf("Failed to install kubelet service: %v", err)
 	}
@@ -49,19 +52,20 @@ func InstallMasterComponents(config *apis.InitConfiguration) {
 	if err := systemd.Start("keepalived.service"); err != nil {
 		log.Fatalf("Failed to install keepalived service: %v", err)
 	}
-
 }
 
 func InstallNodeComponents(config *apis.JoinConfiguration) {
 	PopulateCache()
-
+	placeKubeComponents()
+	placeCNIPlugin()
 	if err := systemd.StopIfActive("kubelet.service"); err != nil {
 		log.Fatalf("Failed to install kubelet service: %v", err)
 	}
 	if err := systemd.DisableIfEnabled("kubelet.service"); err != nil {
 		log.Fatalf("Failed to install kubelet service: %v", err)
 	}
-	PlaceComponentsFromCache(config.Networking)
+	placeKubeletSystemAndDropinFiles(config.Networking, config.Kubelet)
+	placeNetworkConfig()
 	if err := systemd.Enable("kubelet.service"); err != nil {
 		log.Fatalf("Failed to install kubelet service: %v", err)
 	}
@@ -70,13 +74,10 @@ func InstallNodeComponents(config *apis.JoinConfiguration) {
 	}
 }
 
-func PlaceComponentsFromCache(netConfig apis.Networking) {
-	placeKubeComponents()
-	placeCNIPlugin()
+func placeKubeletSystemAndDropinFiles(netConfig apis.Networking, kubeletConfig *kubeletconfigv1beta1.KubeletConfiguration) {
 	placeAndModifyKubeletServiceFile()
-	placeAndModifyKubeadmKubeletSystemdDropin(netConfig)
-	placeAndModifyNodeadmKubeletSystemdDropin(netConfig)
-	placeNetworkConfig()
+	placeAndModifyKubeadmKubeletSystemdDropin()
+	placeAndModifyNodeadmKubeletSystemdDropin(netConfig, kubeletConfig)
 }
 
 func placeAndModifyKubeletServiceFile() {
@@ -85,7 +86,7 @@ func placeAndModifyKubeletServiceFile() {
 	ReplaceString(serviceFile, "/usr/bin", constants.BaseInstallDir)
 }
 
-func placeAndModifyKubeadmKubeletSystemdDropin(netConfig apis.Networking) {
+func placeAndModifyKubeadmKubeletSystemdDropin() {
 	err := os.MkdirAll(filepath.Join(constants.SystemdDir, "kubelet.service.d"), constants.Execute)
 	if err != nil {
 		log.Fatalf("Failed to create dir with error %v\n", err)
@@ -95,7 +96,7 @@ func placeAndModifyKubeadmKubeletSystemdDropin(netConfig apis.Networking) {
 	ReplaceString(confFile, "/usr/bin", constants.BaseInstallDir)
 }
 
-func placeAndModifyNodeadmKubeletSystemdDropin(netConfig apis.Networking) {
+func placeAndModifyNodeadmKubeletSystemdDropin(netConfig apis.Networking, kubeletConfig *kubeletconfigv1beta1.KubeletConfiguration) {
 	err := os.MkdirAll(filepath.Join(constants.SystemdDir, "kubelet.service.d"), constants.Execute)
 	if err != nil {
 		log.Fatalf("Failed to create dir with error %v\n", err)
@@ -114,22 +115,22 @@ func placeAndModifyNodeadmKubeletSystemdDropin(netConfig apis.Networking) {
 
 	data := struct {
 		FailSwapOn       bool
-		MaxPods          int
+		MaxPods          int32
 		ClusterDNS       string
 		ClusterDomain    string
 		HostnameOverride string
-		KubeAPIQPS       int
-		KubeAPIBurst     int
+		KubeAPIQPS       int32
+		KubeAPIBurst     int32
 		EvictionHard     string
 		FeatureGates     string
 	}{
-		FailSwapOn:       constants.KubeletFailSwapOn,
-		MaxPods:          constants.KubeletMaxPods,
+		FailSwapOn:       *kubeletConfig.FailSwapOn,
+		MaxPods:          kubeletConfig.MaxPods,
 		ClusterDNS:       dnsIP.String(),
 		ClusterDomain:    netConfig.DNSDomain,
 		HostnameOverride: hostnameOverride,
-		KubeAPIQPS:       constants.KubeletKubeAPIQPS,
-		KubeAPIBurst:     constants.KubeletKubeAPIBurst,
+		KubeAPIQPS:       *kubeletConfig.KubeAPIQPS,
+		KubeAPIBurst:     kubeletConfig.KubeAPIBurst,
 		EvictionHard:     constants.KubeletEvictionHard,
 		FeatureGates:     constants.FeatureGates,
 	}
