@@ -19,9 +19,10 @@ func SetInitDefaults(config *InitConfiguration) {
 	config.MasterConfiguration.APIVersion = "kubeadm.k8s.io/v1alpha1"
 	config.MasterConfiguration.KubernetesVersion = constants.KubernetesVersion
 	config.MasterConfiguration.NoTaintMaster = true
-	config.MasterConfiguration.APIServerExtraArgs = map[string]string{
-		"service-node-port-range": constants.ServiceNodePortRange,
-	}
+
+	addOrAppend(&config.MasterConfiguration.APIServerExtraArgs, "feature-gates", constants.FeatureGates)
+	addOrAppend(&config.MasterConfiguration.ControllerManagerExtraArgs, "feature-gates", constants.FeatureGates)
+	addOrAppend(&config.MasterConfiguration.SchedulerExtraArgs, "feature-gates", constants.FeatureGates)
 
 }
 
@@ -61,5 +62,21 @@ func SetMasterConfigurationNetworkingDefaultsWithNetworking(config *InitConfigur
 	}
 	if config.MasterConfiguration.Networking.DNSDomain == "" {
 		config.MasterConfiguration.Networking.DNSDomain = config.Networking.DNSDomain
+	}
+}
+
+func addOrAppend(extraArgs *map[string]string, key string, value string) {
+	// Create a new map if it doesn't exist.
+	if *extraArgs == nil {
+		*extraArgs = make(map[string]string)
+	}
+	// Add the key with the value if it doesn't exist. Otherwise, append the value
+	// to the pre-existing values.
+	prevFeatureGates := (*extraArgs)[key]
+	if prevFeatureGates == "" {
+		(*extraArgs)[key] = value
+	} else {
+		featureGates := prevFeatureGates + "," + value
+		(*extraArgs)[key] = featureGates
 	}
 }
