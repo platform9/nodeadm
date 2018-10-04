@@ -7,6 +7,7 @@ import (
 
 	"github.com/platform9/nodeadm/constants"
 	"github.com/platform9/nodeadm/deprecated"
+	"github.com/platform9/nodeadm/systemd"
 	"github.com/platform9/nodeadm/utils"
 	"github.com/spf13/cobra"
 )
@@ -28,25 +29,40 @@ var nodeCmdReset = &cobra.Command{
 
 func kubeadmReset() {
 	log.Printf("[nodeadm:reset] Invoking kubeadm reset")
-	deprecated.RunBestEffort(constants.BaseInstallDir, "kubeadm", "reset")
+	deprecated.RunBestEffort(constants.BaseInstallDir, "kubeadm", "reset", "--ignore-preflight-errors=all")
 }
 
 func cleanupKeepalived() {
 	log.Printf("[nodeadm:reset] Stopping & Removing Keepalived")
-	utils.StopAndDisableService("keepalived.service")
+	if err := systemd.StopIfActive("keepalived.service"); err != nil {
+		log.Fatalf("Failed to stop keepalived service: %v", err)
+	}
+	if err := systemd.DisableIfEnabled("keepalived.service"); err != nil {
+		log.Fatalf("Failed to disable keepalived service: %v", err)
+	}
 	os.RemoveAll(filepath.Join(constants.SystemdDir, "keepalived.service"))
 	os.RemoveAll(filepath.Join(constants.SystemdDir, "keepalived.conf"))
 }
 
 func cleanupKubelet() {
 	log.Printf("[nodeadm:reset] Stopping & Removing kubelet")
-	utils.StopAndDisableService("kubelet.service")
+	if err := systemd.StopIfActive("kubelet.service"); err != nil {
+		log.Fatalf("Failed to stop kubelet service: %v", err)
+	}
+	if err := systemd.DisableIfEnabled("kubelet.service"); err != nil {
+		log.Fatalf("Failed to disable kubelet service: %v", err)
+	}
+	failed, err := systemd.Failed("kubelet.service")
+	if err != nil {
+		log.Fatalf("Failed to check if kubelet service failed: %v", err)
+	}
+	if failed {
+		if err := systemd.ResetFailed("kubelet.service"); err != nil {
+			log.Fatalf("Failed to reset failed kubelet service: %v", err)
+		}
+	}
 	os.RemoveAll(filepath.Join(constants.SystemdDir, "kubelet.service"))
 	os.RemoveAll(filepath.Join(constants.SystemdDir, "kubelet.service.d"))
-	err := utils.ResetFailedService("kubelet")
-	if err != nil {
-		log.Fatalf("Failed to reset failed kubelet service %v\n", err)
-	}
 }
 
 func cleanupBinaries() {
