@@ -2,9 +2,10 @@ package utils
 
 import (
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // Create symlinks of all the files inside sourceDir to targetDir
@@ -16,7 +17,7 @@ func CreateSymLinks(sourceDir, targetDir string, overwriteSymlinks bool) {
 	_, parentDir := filepath.Split(sourceDir)
 
 	for _, f := range files {
-		log.Print("Creating symlink for " + f.Name())
+		log.Info("Creating symlink for " + f.Name())
 
 		symlinkPath := filepath.Join(targetDir, f.Name())
 

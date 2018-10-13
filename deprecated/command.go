@@ -1,17 +1,18 @@
 package deprecated
 
 import (
-	"log"
 	"os"
 	"os/exec"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func Run(rootDir string, cmdStr string, arg ...string) {
 	if len(rootDir) > 0 {
 		currentPath := os.Getenv("PATH")
 		os.Setenv("PATH", currentPath+":"+rootDir)
-		log.Printf("Updated PATH variable = %s", os.Getenv("PATH"))
-		log.Printf("Running command %s %v", cmdStr, arg)
+		log.Infof("Updated PATH variable = %s", os.Getenv("PATH"))
+		log.Infof("Running command %s %v", cmdStr, arg)
 	}
 	cmd := exec.Command(cmdStr, arg...)
 	cmd.Stdout = os.Stdout
@@ -30,8 +31,8 @@ func RunBestEffort(rootDir string, cmdStr string, arg ...string) {
 	if len(rootDir) > 0 {
 		currentPath := os.Getenv("PATH")
 		os.Setenv("PATH", currentPath+":"+rootDir)
-		log.Printf("Updated PATH variable = %s", os.Getenv("PATH"))
-		log.Printf("Running command %s %v", cmdStr, arg)
+		log.Infof("Updated PATH variable = %s", os.Getenv("PATH"))
+		log.Infof("Running command %s %v", cmdStr, arg)
 	}
 	cmd := exec.Command(cmdStr, arg...)
 	cmd.Stdout = os.Stdout

@@ -3,9 +3,10 @@ package cmd
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ghodss/yaml"
 
@@ -21,11 +22,10 @@ import (
 // nodeCmd represents the cluster command
 var nodeCmdInit = &cobra.Command{
 	Use:   "init",
-	Short: "Initalize the master node with given configuration",
+	Short: "Initialize the master node with given configuration",
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
 		config := &apis.InitConfiguration{}
-
 		configPath := cmd.Flag("cfg").Value.String()
 		if len(configPath) != 0 {
 			config, err = utils.InitConfigurationFromFile(configPath)
@@ -38,9 +38,9 @@ var nodeCmdInit = &cobra.Command{
 			log.Fatalf("Failed to set dynamic defaults: %v", err)
 		}
 		if errors := apis.ValidateInit(config); len(errors) > 0 {
-			log.Println("Failed to validate configuration:")
+			log.Infoln("Failed to validate configuration:")
 			for i, err := range errors {
-				log.Printf("%v: %v", i, err)
+				log.Infof("%v: %v", i, err)
 			}
 			os.Exit(1)
 		}
@@ -58,7 +58,7 @@ var nodeCmdInit = &cobra.Command{
 
 		kubeadmInit(constants.KubeadmConfig)
 
-		log.Println("Applying workaround for https://github.com/kubernetes/kubeadm/issues/857")
+		log.Infoln("Applying workaround for https://github.com/kubernetes/kubeadm/issues/857")
 		if err := workarounds.EnsureKubeProxyRespectsHostoverride(); err != nil {
 			log.Fatalf("Failed to apply workaround: %v", err)
 		}
@@ -69,7 +69,7 @@ var nodeCmdInit = &cobra.Command{
 
 func networkInit(config *apis.InitConfiguration) {
 	file := filepath.Join(constants.ConfInstallDir, constants.FlannelManifestFilename)
-	log.Printf("Pod network %s\n", config.MasterConfiguration.Networking.PodSubnet)
+	log.Infof("Pod network %s\n", config.MasterConfiguration.Networking.PodSubnet)
 	utils.ReplaceString(file, constants.DefaultPodNetwork, config.MasterConfiguration.Networking.PodSubnet)
 	deprecated.Run(constants.BaseInstallDir, "sysctl", "net.bridge.bridge-nf-call-iptables=1")
 	deprecated.Run(constants.BaseInstallDir, "kubectl", fmt.Sprintf("--kubeconfig=%s", constants.AdminKubeconfigFile), "apply", "-f", file)

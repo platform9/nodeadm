@@ -3,10 +3,11 @@ package utils
 import (
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func ReplaceString(file string, from string, to string) {
@@ -22,10 +23,10 @@ func ReplaceString(file string, from string, to string) {
 }
 
 func Download(fileName string, url string, mode os.FileMode) {
-	log.Printf("Downloading %s to location %s", url, fileName)
+	log.Infof("Downloading %s to location %s", url, fileName)
 	_, err := os.Stat(fileName)
 	if !os.IsNotExist(err) {
-		log.Printf("File already exists %s\n", fileName)
+		log.Infof("File already exists %s\n", fileName)
 		if err := os.Chmod(fileName, mode); err != nil {
 			log.Fatalf("Failed to set permissions for file %s, with error %v\n", fileName, err)
 		}

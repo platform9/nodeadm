@@ -1,9 +1,10 @@
 package cmd
 
 import (
-	"log"
 	"os"
 	"path/filepath"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/platform9/nodeadm/constants"
 	"github.com/platform9/nodeadm/deprecated"
@@ -28,12 +29,12 @@ var nodeCmdReset = &cobra.Command{
 }
 
 func kubeadmReset() {
-	log.Printf("[nodeadm:reset] Invoking kubeadm reset")
+	log.Infof("[nodeadm:reset] Invoking kubeadm reset")
 	deprecated.RunBestEffort(constants.BaseInstallDir, "kubeadm", "reset", "--ignore-preflight-errors=all")
 }
 
 func cleanupKeepalived() {
-	log.Printf("[nodeadm:reset] Stopping & Removing Keepalived")
+	log.Infof("[nodeadm:reset] Stopping & Removing Keepalived")
 	if err := systemd.StopIfActive("keepalived.service"); err != nil {
 		log.Fatalf("Failed to stop keepalived service: %v", err)
 	}
@@ -45,7 +46,7 @@ func cleanupKeepalived() {
 }
 
 func cleanupKubelet() {
-	log.Printf("[nodeadm:reset] Stopping & Removing kubelet")
+	log.Infof("[nodeadm:reset] Stopping & Removing kubelet")
 	if err := systemd.StopIfActive("kubelet.service"); err != nil {
 		log.Fatalf("Failed to stop kubelet service: %v", err)
 	}
@@ -66,7 +67,7 @@ func cleanupKubelet() {
 }
 
 func cleanupBinaries() {
-	log.Printf("[nodeadm:reset] Removing kubernetes binaries")
+	log.Infof("[nodeadm:reset] Removing kubernetes binaries")
 	os.RemoveAll(filepath.Join(constants.BaseInstallDir, "kubelet"))
 	os.RemoveAll(filepath.Join(constants.BaseInstallDir, "kubeadm"))
 	os.RemoveAll(filepath.Join(constants.BaseInstallDir, "kubectl"))
@@ -76,7 +77,7 @@ func cleanupBinaries() {
 }
 
 func cleanupNetworking() {
-	log.Printf("[nodeadm:reset] Removing flannel state files & resetting networking")
+	log.Infof("[nodeadm:reset] Removing flannel state files & resetting networking")
 	os.RemoveAll(constants.CNIConfigDir)
 	os.RemoveAll(constants.CNIStateDir)
 	deprecated.RunBestEffort("", "ip", "link", "del", "cni0")
