@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
@@ -72,7 +73,7 @@ func loadAvailableImages(cli *client.Client) {
 	os.MkdirAll(constants.ImagesCacheDir, constants.Execute)
 	files, err := ioutil.ReadDir(constants.ImagesCacheDir)
 	if err != nil {
-		log.Printf("Failed to list files from dir %s skipping loading images with err %v\n", constants.ImagesCacheDir, err)
+		log.Infof("Failed to list files from dir %s skipping loading images with err %v\n", constants.ImagesCacheDir, err)
 	}
 	for _, file := range files {
 		deprecated.Run("", "docker", "load", "-i", filepath.Join(constants.ImagesCacheDir, file.Name()))
@@ -89,7 +90,7 @@ func PopulateCache() {
 		//first check if image is already in docker cache
 		nameFilter := filters.NewArgs()
 		nameFilter.Add("reference", image)
-		log.Printf("Checking if image %s is available in docker cache", image)
+		log.Infof("Checking if image %s is available in docker cache", image)
 		list, err := cli.ImageList(context.Background(), types.ImageListOptions{
 			Filters: nameFilter,
 		})
@@ -97,7 +98,7 @@ func PopulateCache() {
 			log.Fatalf("Failed to list images with error %v\n", err)
 		}
 		if len(list) == 0 {
-			log.Printf("Trying to pull image %s", image)
+			log.Infof("Trying to pull image %s", image)
 			deprecated.Run("", "docker", "pull", image)
 		}
 		list, err = cli.ImageList(context.Background(), types.ImageListOptions{

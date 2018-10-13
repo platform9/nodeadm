@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"log"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/platform9/nodeadm/constants"
 )
@@ -83,21 +84,21 @@ const (
 // kube-proxy respects the hostnameOverride setting. The function is idempotent.
 // See: https://github.com/kubernetes/kubeadm/issues/857
 func EnsureKubeProxyRespectsHostoverride() error {
-	log.Println("[workarounds] Checking whether kube-proxy daemonset is patched")
+	log.Infoln("[workarounds] Checking whether kube-proxy daemonset is patched")
 	patched, err := isPatchedKubeProxyDaemonSet()
 	if err != nil {
 		return fmt.Errorf("unable to check if kube-proxy daemonset is patched: %v", err)
 	}
 	if patched {
-		log.Println("[workarounds] Kube-proxy daemonset already patched. Continuing. ")
+		log.Infoln("[workarounds] Kube-proxy daemonset already patched. Continuing. ")
 		return nil
 	}
-	log.Println("[workarounds] Patching kube-proxy daemonset")
+	log.Infoln("[workarounds] Patching kube-proxy daemonset")
 	err = patchKubeProxyDaemonSet()
 	if err != nil {
 		return fmt.Errorf("unable to patch kube-proxy daemonset: %v", err)
 	}
-	log.Println("[workarounds] Patched kube-proxy daemonset")
+	log.Infoln("[workarounds] Patched kube-proxy daemonset")
 	return nil
 }
 

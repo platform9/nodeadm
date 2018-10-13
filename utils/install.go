@@ -3,12 +3,13 @@ package utils
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"text/template"
+
+	log "github.com/sirupsen/logrus"
 
 	kubeadmconstants "k8s.io/kubernetes/cmd/kubeadm/app/constants"
 	kubeletconfigv1beta1 "k8s.io/kubernetes/pkg/kubelet/apis/kubeletconfig/v1beta1"
@@ -183,7 +184,7 @@ func writeTemplateIntoFile(tmpl, name, file string, data interface{}) {
 }
 
 func writeKeepAlivedServiceFiles(config *apis.InitConfiguration) {
-	log.Printf("Vip configuration as parsed from the file %v\n", config)
+	log.Infof("Vip configuration as parsed from the file %v\n", config)
 	if len(config.VIPConfiguration.IP) == 0 {
 		ip, err := netutil.ChooseHostInterface()
 		if err != nil {

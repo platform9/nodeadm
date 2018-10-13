@@ -3,7 +3,8 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ghodss/yaml"
 	"github.com/spf13/cobra"
