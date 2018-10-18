@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	log "github.com/sirupsen/logrus"
+	log "github.com/platform9/nodeadm/logs"
 )
 
 // Create symlinks of all the files inside sourceDir to targetDir
