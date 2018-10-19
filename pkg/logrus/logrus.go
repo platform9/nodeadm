@@ -13,10 +13,13 @@ var (
 	stdError = log.New()
 )
 
+// SetLogLevel sets level for both loggers
 func SetLogLevel(level log.Level) {
 	stdOut.Out = os.Stdout
 	stdError.Out = os.Stderr
+	// used only for levels >= log.InfoLevel
 	stdOut.SetLevel(level)
+	// used only for levels <= log.ErrorLevel
 	stdError.SetLevel(level)
 }
 
@@ -61,12 +64,12 @@ func Info(args ...interface{}) {
 
 // Warn logs a message at level Warn on the standard logger.
 func Warn(args ...interface{}) {
-	stdOut.Warn(args...)
+	stdError.Warn(args...)
 }
 
 // Warning logs a message at level Warn on the standard logger.
 func Warning(args ...interface{}) {
-	stdOut.Warning(args...)
+	stdError.Warning(args...)
 }
 
 // Error logs a message at level Error on the standard logger.
@@ -101,12 +104,12 @@ func Infof(format string, args ...interface{}) {
 
 // Warnf logs a message at level Warn on the standard logger.
 func Warnf(format string, args ...interface{}) {
-	stdOut.Warnf(format, args...)
+	stdError.Warnf(format, args...)
 }
 
 // Warningf logs a message at level Warn on the standard logger.
 func Warningf(format string, args ...interface{}) {
-	stdOut.Warningf(format, args...)
+	stdError.Warningf(format, args...)
 }
 
 // Errorf logs a message at level Error on the standard logger.
@@ -141,12 +144,12 @@ func Infoln(args ...interface{}) {
 
 // Warnln logs a message at level Warn on the standard logger.
 func Warnln(args ...interface{}) {
-	stdOut.Warnln(args...)
+	stdError.Warnln(args...)
 }
 
 // Warningln logs a message at level Warn on the standard logger.
 func Warningln(args ...interface{}) {
-	stdOut.Warningln(args...)
+	stdError.Warningln(args...)
 }
 
 // Errorln logs a message at level Error on the standard logger.
