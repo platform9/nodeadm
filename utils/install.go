@@ -90,7 +90,7 @@ func placeAndModifyKubeletServiceFile() {
 func placeAndModifyKubeadmKubeletSystemdDropin() {
 	err := os.MkdirAll(filepath.Join(constants.SystemdDir, "kubelet.service.d"), constants.Execute)
 	if err != nil {
-		log.Fatalf("Failed to create dir with error %v\n", err)
+		log.Fatalf("\nFailed to create dir with error %v", err)
 	}
 	confFile := filepath.Join(constants.SystemdDir, "kubelet.service.d", constants.KubeadmKubeletSystemdDropinFilename)
 	deprecated.Run("", "cp", filepath.Join(constants.CacheDir, constants.KubeDirName, constants.KubeadmKubeletSystemdDropinFilename), confFile)
@@ -100,7 +100,7 @@ func placeAndModifyKubeadmKubeletSystemdDropin() {
 func placeAndModifyNodeadmKubeletSystemdDropin(netConfig apis.Networking, kubeletConfig *kubeletconfigv1beta1.KubeletConfiguration) {
 	err := os.MkdirAll(filepath.Join(constants.SystemdDir, "kubelet.service.d"), constants.Execute)
 	if err != nil {
-		log.Fatalf("Failed to create dir with error %v\n", err)
+		log.Fatalf("\nFailed to create dir with error %v", err)
 	}
 	confFile := filepath.Join(constants.SystemdDir, "kubelet.service.d", constants.NodeadmKubeletSystemdDropinFilename)
 
@@ -151,7 +151,7 @@ func placeCNIPlugin() {
 	if _, err := os.Stat(constants.CniVersionInstallDir); os.IsNotExist(err) {
 		err := os.MkdirAll(constants.CniVersionInstallDir, constants.Execute)
 		if err != nil {
-			log.Fatalf("Failed to create dir %s with error %v\n", constants.CniVersionInstallDir, err)
+			log.Fatalf("\nFailed to create dir %s with error %v", constants.CniVersionInstallDir, err)
 		}
 		deprecated.Run("", "tar", "-xvf", filepath.Join("/tmp", tmpFile), "-C", constants.CniVersionInstallDir)
 		CreateSymLinks(constants.CniVersionInstallDir, constants.CNIBaseDir, true)
@@ -184,7 +184,7 @@ func writeTemplateIntoFile(tmpl, name, file string, data interface{}) {
 }
 
 func writeKeepAlivedServiceFiles(config *apis.InitConfiguration) {
-	log.Infof("Vip configuration as parsed from the file %v\n", config)
+	log.Infof("\nVip configuration as parsed from the file %v", config)
 	if len(config.VIPConfiguration.IP) == 0 {
 		ip, err := netutil.ChooseHostInterface()
 		if err != nil {

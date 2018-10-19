@@ -19,11 +19,11 @@ func Run(rootDir string, cmdStr string, arg ...string) {
 	cmd.Stderr = os.Stderr
 	err := cmd.Start()
 	if err != nil {
-		log.Fatalf("Failed to run command %s with error %v\n", cmdStr, err)
+		log.Fatalf("\nFailed to run command %s with error %v", cmdStr, err)
 	}
 	err = cmd.Wait()
 	if err != nil {
-		log.Fatalf("Failed to get output of command %s with error %v\n", cmdStr, err)
+		log.Fatalf("\nFailed to get output of command %s with error %v", cmdStr, err)
 	}
 }
 
