@@ -9,7 +9,7 @@ import (
 	"strings"
 	"text/template"
 
-	log "github.com/platform9/nodeadm/logs"
+	log "github.com/platform9/nodeadm/pkg/logrus"
 
 	kubeadmconstants "k8s.io/kubernetes/cmd/kubeadm/app/constants"
 	kubeletconfigv1beta1 "k8s.io/kubernetes/pkg/kubelet/apis/kubeletconfig/v1beta1"

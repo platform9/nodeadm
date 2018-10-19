@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	log "github.com/platform9/nodeadm/logs"
+	log "github.com/platform9/nodeadm/pkg/logrus"
 )
 
 func ReplaceString(file string, from string, to string) {

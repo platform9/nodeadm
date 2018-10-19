@@ -4,7 +4,7 @@ import (
 	"os"
 	"path/filepath"
 
-	log "github.com/platform9/nodeadm/logs"
+	log "github.com/platform9/nodeadm/pkg/logrus"
 
 	"github.com/platform9/nodeadm/constants"
 	"github.com/platform9/nodeadm/deprecated"

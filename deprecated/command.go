@@ -4,7 +4,7 @@ import (
 	"os"
 	"os/exec"
 
-	log "github.com/platform9/nodeadm/logs"
+	log "github.com/platform9/nodeadm/pkg/logrus"
 )
 
 func Run(rootDir string, cmdStr string, arg ...string) {
