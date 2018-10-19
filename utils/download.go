@@ -73,7 +73,7 @@ func loadAvailableImages(cli *client.Client) {
 	os.MkdirAll(constants.ImagesCacheDir, constants.Execute)
 	files, err := ioutil.ReadDir(constants.ImagesCacheDir)
 	if err != nil {
-		log.Infof("Failed to list files from dir %s skipping loading images with err %v\n", constants.ImagesCacheDir, err)
+		log.Errorf("\nFailed to list files from dir %s skipping loading images with err %v", constants.ImagesCacheDir, err)
 	}
 	for _, file := range files {
 		deprecated.Run("", "docker", "load", "-i", filepath.Join(constants.ImagesCacheDir, file.Name()))
@@ -95,7 +95,7 @@ func PopulateCache() {
 			Filters: nameFilter,
 		})
 		if err != nil {
-			log.Fatalf("Failed to list images with error %v\n", err)
+			log.Fatalf("\nFailed to list images with error %v", err)
 		}
 		if len(list) == 0 {
 			log.Infof("Trying to pull image %s", image)

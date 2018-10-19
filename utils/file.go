@@ -26,27 +26,27 @@ func Download(fileName string, url string, mode os.FileMode) {
 	log.Infof("Downloading %s to location %s", url, fileName)
 	_, err := os.Stat(fileName)
 	if !os.IsNotExist(err) {
-		log.Infof("File already exists %s\n", fileName)
+		log.Infof("\nFile already exists %s", fileName)
 		if err := os.Chmod(fileName, mode); err != nil {
-			log.Fatalf("Failed to set permissions for file %s, with error %v\n", fileName, err)
+			log.Fatalf("\nFailed to set permissions for file %s, with error %v", fileName, err)
 		}
 	} else {
 		file, err := os.Create(fileName)
 		if err != nil {
-			log.Fatalf("Failed to create file %s with err %v\n", fileName, err)
+			log.Fatalf("\nFailed to create file %s with err %v", fileName, err)
 		}
 		defer file.Close()
 		response, err := http.Get(url)
 		if err != nil {
-			log.Fatalf("Failed to download %s with error %v\n", url, err)
+			log.Fatalf("\nFailed to download %s with error %v", url, err)
 		}
 		defer response.Body.Close()
 		_, err = io.Copy(file, response.Body)
 		if err != nil {
-			log.Fatalf("Failed to save file %s with error %v\n", fileName, err)
+			log.Fatalf("\nFailed to save file %s with error %v", fileName, err)
 		}
 	}
 	if err := os.Chmod(fileName, mode); err != nil {
-		log.Fatalf("Failed to set permissions for file %s, with error %v\n", fileName, err)
+		log.Fatalf("\nFailed to set permissions for file %s, with error %v", fileName, err)
 	}
 }

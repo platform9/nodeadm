@@ -38,20 +38,20 @@ var nodeCmdInit = &cobra.Command{
 			log.Fatalf("Failed to set dynamic defaults: %v", err)
 		}
 		if errors := apis.ValidateInit(config); len(errors) > 0 {
-			log.Infoln("Failed to validate configuration:")
+			log.Error("Failed to validate configuration:")
 			for i, err := range errors {
-				log.Infof("%v: %v", i, err)
+				log.Errorf("%v: %v", i, err)
 			}
 			os.Exit(1)
 		}
 
 		masterConfig, err := yaml.Marshal(config.MasterConfiguration)
 		if err != nil {
-			log.Fatalf("Failed to marshal master config with err %v\n", err)
+			log.Fatalf("\nFailed to marshal master config with err %v", err)
 		}
 		err = ioutil.WriteFile(constants.KubeadmConfig, masterConfig, constants.Read)
 		if err != nil {
-			log.Fatalf("Failed to write file %q with error %v\n", constants.KubeadmConfig, err)
+			log.Fatalf("\nFailed to write file %q with error %v", constants.KubeadmConfig, err)
 		}
 
 		utils.InstallMasterComponents(config)
@@ -69,7 +69,7 @@ var nodeCmdInit = &cobra.Command{
 
 func networkInit(config *apis.InitConfiguration) {
 	file := filepath.Join(constants.ConfInstallDir, constants.FlannelManifestFilename)
-	log.Infof("Pod network %s\n", config.MasterConfiguration.Networking.PodSubnet)
+	log.Infof("\nPod network %s", config.MasterConfiguration.Networking.PodSubnet)
 	utils.ReplaceString(file, constants.DefaultPodNetwork, config.MasterConfiguration.Networking.PodSubnet)
 	deprecated.Run(constants.BaseInstallDir, "sysctl", "net.bridge.bridge-nf-call-iptables=1")
 	deprecated.Run(constants.BaseInstallDir, "kubectl", fmt.Sprintf("--kubeconfig=%s", constants.AdminKubeconfigFile), "apply", "-f", file)
