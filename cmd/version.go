@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	log "github.com/platform9/nodeadm/logs"
+	log "github.com/platform9/nodeadm/pkg/logrus"
 
 	"github.com/ghodss/yaml"
 	"github.com/spf13/cobra"

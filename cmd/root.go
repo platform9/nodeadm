@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	log "github.com/platform9/nodeadm/logs"
+	log "github.com/platform9/nodeadm/pkg/logrus"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )

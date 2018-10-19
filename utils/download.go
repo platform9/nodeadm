@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	log "github.com/platform9/nodeadm/logs"
+	log "github.com/platform9/nodeadm/pkg/logrus"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
