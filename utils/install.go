@@ -32,7 +32,6 @@ func InstallMasterComponents(config *apis.InitConfiguration) {
 		log.Fatalf("Failed to install kubelet service: %v", err)
 	}
 	placeKubeletSystemAndDropinFiles(config.Networking, config.Kubelet)
-	placeNetworkConfig()
 	if err := systemd.Enable("kubelet.service"); err != nil {
 		log.Fatalf("Failed to install kubelet service: %v", err)
 	}
@@ -66,7 +65,6 @@ func InstallNodeComponents(config *apis.JoinConfiguration) {
 		log.Fatalf("Failed to install kubelet service: %v", err)
 	}
 	placeKubeletSystemAndDropinFiles(config.Networking, config.Kubelet)
-	placeNetworkConfig()
 	if err := systemd.Enable("kubelet.service"); err != nil {
 		log.Fatalf("Failed to install kubelet service: %v", err)
 	}
@@ -157,11 +155,6 @@ func placeCNIPlugin() {
 		CreateSymLinks(constants.CniVersionInstallDir, constants.CNIBaseDir, true)
 	}
 
-}
-
-func placeNetworkConfig() {
-	os.MkdirAll(constants.ConfInstallDir, constants.Execute)
-	deprecated.Run("", "cp", filepath.Join(constants.CacheDir, constants.FlannelDirName, constants.FlannelManifestFilename), filepath.Join(constants.ConfInstallDir, constants.FlannelManifestFilename))
 }
 
 func writeTemplateIntoFile(tmpl, name, file string, data interface{}) {

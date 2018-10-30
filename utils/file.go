@@ -22,6 +22,15 @@ func ReplaceString(file string, from string, to string) {
 	}
 }
 
+func GetContents(file string, from string, to string) string {
+	read, err := ioutil.ReadFile(file)
+	if err != nil {
+		log.Fatalf("Failed to read file %s with error %v", file, err)
+	}
+	newContents := strings.Replace(string(read), from, to, -1)
+	return newContents
+}
+
 func Download(fileName string, url string, mode os.FileMode) {
 	log.Infof("Downloading %s to location %s", url, fileName)
 	_, err := os.Stat(fileName)
