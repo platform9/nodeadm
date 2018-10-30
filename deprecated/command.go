@@ -29,7 +29,7 @@ func Run(rootDir string, cmdStr string, arg ...string) {
 	}
 }
 
-func PipeCmd(rootDir string, inputStr string, cmdStr string, arg ...string) {
+func RunPipe(rootDir string, inputStr string, cmdStr string, arg ...string) {
 	if len(rootDir) > 0 {
 		currentPath := os.Getenv("PATH")
 		os.Setenv("PATH", currentPath+":"+rootDir)

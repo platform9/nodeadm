@@ -22,7 +22,7 @@ func ReplaceString(file string, from string, to string) {
 	}
 }
 
-func GetContents(file string, from string, to string) string {
+func Substitute(file string, from string, to string) string {
 	read, err := ioutil.ReadFile(file)
 	if err != nil {
 		log.Fatalf("Failed to read file %s with error %v", file, err)

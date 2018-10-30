@@ -72,7 +72,6 @@ func cleanupBinaries() {
 	os.RemoveAll(filepath.Join(constants.BaseInstallDir, "kubeadm"))
 	os.RemoveAll(filepath.Join(constants.BaseInstallDir, "kubectl"))
 
-	os.RemoveAll(constants.ConfInstallDir)
 	os.RemoveAll(constants.CNIBaseDir)
 }
 
