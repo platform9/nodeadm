@@ -1,10 +1,9 @@
 package deprecated
 
 import (
-	"bytes"
-	"io"
 	"os"
 	"os/exec"
+	"strings"
 
 	log "github.com/platform9/nodeadm/pkg/logrus"
 )
@@ -29,7 +28,7 @@ func Run(rootDir string, cmdStr string, arg ...string) {
 	}
 }
 
-func RunPipe(rootDir string, inputStr string, cmdStr string, arg ...string) {
+func RunWithInput(rootDir string, inputStr string, cmdStr string, arg ...string) {
 	if len(rootDir) > 0 {
 		currentPath := os.Getenv("PATH")
 		os.Setenv("PATH", currentPath+":"+rootDir)
@@ -37,26 +36,15 @@ func RunPipe(rootDir string, inputStr string, cmdStr string, arg ...string) {
 		log.Infof("Running command %s %v", cmdStr, arg)
 	}
 
-	echoCmd := exec.Command("echo", inputStr)
-	kubectlCmd := exec.Command(cmdStr, arg...)
+	cmd := exec.Command(cmdStr, arg...)
 
-	reader, writer := io.Pipe()
-	var buf bytes.Buffer
+	reader := strings.NewReader(inputStr)
+	cmd.Stdin = reader
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
 
-	echoCmd.Stdout = writer
-
-	kubectlCmd.Stdin = reader
-	kubectlCmd.Stderr = os.Stderr
-	kubectlCmd.Stdout = &buf
-
-	echoCmd.Start()
-	kubectlCmd.Start()
-
-	echoCmd.Wait()
-	writer.Close()
-
-	kubectlCmd.Wait()
-	reader.Close()
+	cmd.Start()
+	cmd.Wait()
 }
 
 func RunBestEffort(rootDir string, cmdStr string, arg ...string) {

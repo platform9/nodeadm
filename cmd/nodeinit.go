@@ -72,7 +72,7 @@ func networkInit(config *apis.InitConfiguration) {
 	log.Infof("\nPod network %s", config.MasterConfiguration.Networking.PodSubnet)
 	manifestStr := utils.Substitute(file, constants.DefaultPodNetwork, config.MasterConfiguration.Networking.PodSubnet)
 	deprecated.Run(constants.BaseInstallDir, "sysctl", "net.bridge.bridge-nf-call-iptables=1")
-	deprecated.RunPipe(constants.BaseInstallDir, manifestStr, "kubectl", fmt.Sprintf("--kubeconfig=%s", constants.AdminKubeconfigFile), "apply", "-f", "-")
+	deprecated.RunWithInput(constants.BaseInstallDir, manifestStr, "kubectl", fmt.Sprintf("--kubeconfig=%s", constants.AdminKubeconfigFile), "apply", "-f", "-")
 }
 
 func kubeadmInit(config string) {
