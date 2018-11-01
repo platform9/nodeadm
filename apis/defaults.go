@@ -56,7 +56,11 @@ func SetMasterConfigurationNetworkingDefaultsWithNetworking(config *InitConfigur
 		config.MasterConfiguration.Networking.ServiceSubnet = config.Networking.ServiceSubnet
 	}
 	if config.MasterConfiguration.Networking.PodSubnet == "" {
-		config.MasterConfiguration.Networking.PodSubnet = config.Networking.PodSubnet
+		config.MasterConfiguration.ControllerManagerExtraArgs["allocate-node-cidrs"] = "true"
+		config.MasterConfiguration.ControllerManagerExtraArgs["cluster-cidr"] = config.Networking.PodSubnet
+		if _, ok := config.MasterConfiguration.ControllerManagerExtraArgs["node-cidr-mask-size"]; !ok {
+			config.MasterConfiguration.ControllerManagerExtraArgs["node-cidr-mask-size"] = "24"
+		}
 	}
 	if config.MasterConfiguration.Networking.DNSDomain == "" {
 		config.MasterConfiguration.Networking.DNSDomain = config.Networking.DNSDomain
