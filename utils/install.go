@@ -247,8 +247,7 @@ vrrp_instance K8S_APISERVER {
 		chk_apiserver
 	}
 }`
-	confFile := filepath.Join(constants.SystemdDir, "keepalived.conf")
-	writeTemplateIntoFile(kaConfFileTemplate, "vipConfFileTemplate", confFile, configTemplateVals)
+	writeTemplateIntoFile(kaConfFileTemplate, "vipConfFileTemplate", constants.KeepalivedConfigFilename, configTemplateVals)
 
 	kaSvcFileTemplate := `
 [Unit]
@@ -272,6 +271,6 @@ WantedBy=multi-user.target
 	type KaServiceData struct {
 		ConfigFile, KeepAlivedImg string
 	}
-	kaServiceData := KaServiceData{confFile, constants.KeepalivedImage}
+	kaServiceData := KaServiceData{constants.KeepalivedConfigFilename, constants.KeepalivedImage}
 	writeTemplateIntoFile(kaSvcFileTemplate, "kaSvcFileTemplate", filepath.Join(constants.SystemdDir, "keepalived.service"), kaServiceData)
 }

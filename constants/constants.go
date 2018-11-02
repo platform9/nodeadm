@@ -53,6 +53,7 @@ const (
 	KubeadmKubeletSystemdDropinFilename = "10-kubeadm.conf"
 	FlannelManifestFilename             = "kube-flannel.yml"
 	AdminKubeconfigFile                 = "/etc/kubernetes/admin.conf"
+	KeepalivedConfigFilename            = "/etc/keepalived/keepalived.conf"
 )
 
 var CNIPluginsFilename = fmt.Sprintf("cni-plugins-amd64-%s.tgz", CNIVersion)
