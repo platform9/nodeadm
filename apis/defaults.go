@@ -55,11 +55,19 @@ func SetMasterConfigurationNetworkingDefaultsWithNetworking(config *InitConfigur
 	if config.MasterConfiguration.Networking.ServiceSubnet == "" {
 		config.MasterConfiguration.Networking.ServiceSubnet = config.Networking.ServiceSubnet
 	}
+	// If MasterConfigurationNetworking.PodSubnet is provided directly, it takes precedence
 	if config.MasterConfiguration.Networking.PodSubnet == "" {
-		config.MasterConfiguration.ControllerManagerExtraArgs["allocate-node-cidrs"] = "true"
-		config.MasterConfiguration.ControllerManagerExtraArgs["cluster-cidr"] = config.Networking.PodSubnet
-		if _, ok := config.MasterConfiguration.ControllerManagerExtraArgs["node-cidr-mask-size"]; !ok {
-			config.MasterConfiguration.ControllerManagerExtraArgs["node-cidr-mask-size"] = "24"
+		// Set controller manager extra args directly because of the issue
+		// https://github.com/kubernetes/kubeadm/issues/724
+		// Defaults used here DONOT belong in cctl as these are part of implementation details for nodeadm
+		if _, ok := config.MasterConfiguration.ControllerManagerExtraArgs[constants.ControllerManagerAllocateNodeCidrsKey]; !ok {
+			config.MasterConfiguration.ControllerManagerExtraArgs[constants.ControllerManagerAllocateNodeCidrsKey] = constants.ControllerManagerAllocateNodeCidrsValue
+		}
+		if _, ok := config.MasterConfiguration.ControllerManagerExtraArgs[constants.ControllerManagerClusterCidrKey]; !ok {
+			config.MasterConfiguration.ControllerManagerExtraArgs[constants.ControllerManagerClusterCidrKey] = config.Networking.PodSubnet
+		}
+		if _, ok := config.MasterConfiguration.ControllerManagerExtraArgs[constants.ControllerManagerNodeCidrMaskSizeKey]; !ok {
+			config.MasterConfiguration.ControllerManagerExtraArgs[constants.ControllerManagerNodeCidrMaskSizeKey] = constants.ControllerManagerNodeCidrMaskSizeValue
 		}
 	}
 	if config.MasterConfiguration.Networking.DNSDomain == "" {

@@ -69,8 +69,11 @@ var nodeCmdInit = &cobra.Command{
 }
 
 func networkInit(config *apis.InitConfiguration) {
-	file := filepath.Join(constants.CacheDir, constants.FlannelDirName, constants.FlannelManifestFilename)
-	log.Infof("\nPod network %s", config.MasterConfiguration.Networking.PodSubnet)
+	subnetCIDR := config.MasterConfiguration.Networking.PodSubnet
+	if len(subnetCidr) == 0 {
+		subnetCidr = config.MasterConfiguration.ControllerManagerExtraArgs[constants.ControllerManagerAllocateNodeCidrsKey]
+	}
+	log.Infof("Pod network %s", subnetCidr)
 	manifestStr := utils.Substitute(file, constants.DefaultPodNetwork, config.MasterConfiguration.Networking.PodSubnet)
 
 	cmd := exec.Command(constants.Sysctl, "net.bridge.bridge-nf-call-iptables=1")
@@ -86,6 +89,7 @@ func networkInit(config *apis.InitConfiguration) {
 	if err != nil {
 		log.Fatalf("failed to run %q: %s", strings.Join(cmd.Args, " "), err)
 	}
+
 }
 
 func kubeadmInit(config string) {
