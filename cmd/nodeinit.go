@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 
 	log "github.com/platform9/nodeadm/pkg/logrus"
 
@@ -71,8 +73,20 @@ func networkInit(config *apis.InitConfiguration) {
 	file := filepath.Join(constants.CacheDir, constants.FlannelDirName, constants.FlannelManifestFilename)
 	log.Infof("\nPod network %s", config.MasterConfiguration.Networking.PodSubnet)
 	manifestStr := utils.Substitute(file, constants.DefaultPodNetwork, config.MasterConfiguration.Networking.PodSubnet)
-	deprecated.Run(constants.BaseInstallDir, "sysctl", "net.bridge.bridge-nf-call-iptables=1")
-	deprecated.RunWithInput(constants.BaseInstallDir, manifestStr, "kubectl", fmt.Sprintf("--kubeconfig=%s", constants.AdminKubeconfigFile), "apply", "-f", "-")
+
+	cmd := exec.Command(constants.Sysctl, "net.bridge.bridge-nf-call-iptables=1")
+	err := cmd.Run()
+	if err != nil {
+		log.Fatalf("failed to run %q: %s", strings.Join(cmd.Args, " "), err)
+	}
+
+	cmd = exec.Command(filepath.Join(constants.BaseInstallDir, "kubectl"), fmt.Sprintf("--kubeconfig=%s", constants.AdminKubeconfigFile), "apply", "-f", "-")
+	reader := strings.NewReader(manifestStr)
+	cmd.Stdin = reader
+	err = cmd.Run()
+	if err != nil {
+		log.Fatalf("failed to run %q: %s", strings.Join(cmd.Args, " "), err)
+	}
 }
 
 func kubeadmInit(config string) {

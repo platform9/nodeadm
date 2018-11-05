@@ -28,6 +28,7 @@ const (
 	Execute              = 0744
 	Read                 = 0644 // TODO: Add PodPriority when introduced in kubeadm
 	FeatureGates         = "ExperimentalCriticalPodAnnotation=true"
+	Sysctl               = "/sbin/sysctl"
 )
 
 const (
