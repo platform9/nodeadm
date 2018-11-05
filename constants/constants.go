@@ -8,27 +8,39 @@ import (
 )
 
 const (
-	KubernetesVersion    = "v1.10.4"
-	CNIVersion           = "v0.6.0"
-	BaseInstallDir       = "/opt/bin"
-	CNIBaseDir           = "/opt/cni/bin"
-	CNIConfigDir         = "/etc/cni"
-	CNIStateDir          = "/var/lib/cni"
-	SystemdDir           = "/etc/systemd/system"
-	FlannelVersion       = "v0.10.0"
-	DefaultPodNetwork    = "10.244.0.0/16"
-	DefaultDNSIP         = "10.96.0.10"
-	DefaultServiceSubnet = "10.96.0.0/12"
-	DefaultDNSDomain     = "cluster.local"
-	DefaultRouterID      = 42
-	KubeadmConfig        = "/tmp/kubeadm.yaml"
-	KubeDNSVersion       = "1.14.8"
-	KeepalivedImage      = "platform9/keepalived:v2.0.4"
-	CacheDir             = "/var/cache/nodeadm/"
-	Execute              = 0744
-	Read                 = 0644 // TODO: Add PodPriority when introduced in kubeadm
-	FeatureGates         = "ExperimentalCriticalPodAnnotation=true"
-	Sysctl               = "/sbin/sysctl"
+	KubernetesVersion                     = "v1.10.4"
+	CNIVersion                            = "v0.6.0"
+	BaseInstallDir                        = "/opt/bin"
+	CNIBaseDir                            = "/opt/cni/bin"
+	CNIConfigDir                          = "/etc/cni"
+	CNIStateDir                           = "/var/lib/cni"
+	SystemdDir                            = "/etc/systemd/system"
+	ConfigDir                             = "conf"
+	FlannelVersion                        = "v0.10.0"
+	DefaultPodNetwork                     = "10.244.0.0/16"
+	DefaultDNSIP                          = "10.96.0.10"
+	DefaultServiceSubnet                  = "10.96.0.0/12"
+	DefaultDNSDomain                      = "cluster.local"
+	DefaultRouterID                       = 42
+	KubeadmConfig                         = "/tmp/kubeadm.yaml"
+	KubeDNSVersion                        = "1.14.8"
+	KeepalivedImage                       = "platform9/keepalived:v2.0.4"
+	CacheDir                              = "/var/cache/nodeadm/"
+	Execute                               = 0744
+	Read                                  = 0644 // TODO: Add PodPriority when introduced in kubeadm
+	FeatureGates                          = "ExperimentalCriticalPodAnnotation=true"
+	Sysctl                                = "/sbin/sysctl"
+	ControllerManagerAllocateNodeCidrsKey = "allocate-node-cidrs"
+	ControllerManagerClusterCidrKey       = "cluster-cidr"
+	ControllerManagerNodeCidrMaskSizeKey  = "node-cidr-mask-size"
+	// TODO(puneet) remove when we move to 1.11.
+	// Currently set it similar to upstream
+	// https://github.com/kubernetes/kubernetes/blob/v1.10.4/cmd/kubeadm/app/phases/controlplane/manifests.go#L281
+	ControllerManagerNodeCidrMaskSizeValue = "24"
+	// TODO(puneet) remove when we move to 1.11.
+	// Currently set it similar to upstream
+	// https://github.com/kubernetes/kubernetes/blob/v1.10.4/cmd/kubeadm/app/phases/controlplane/manifests.go#L340
+	ControllerManagerAllocateNodeCidrsValue = "true"
 )
 
 const (
