@@ -16,7 +16,6 @@ import (
 
 	"github.com/platform9/nodeadm/apis"
 	"github.com/platform9/nodeadm/constants"
-	"github.com/platform9/nodeadm/deprecated"
 	"github.com/platform9/nodeadm/utils"
 	"github.com/spf13/cobra"
 )
@@ -90,7 +89,11 @@ func networkInit(config *apis.InitConfiguration) {
 }
 
 func kubeadmInit(config string) {
-	deprecated.Run(constants.BaseInstallDir, "kubeadm", "init", "--ignore-preflight-errors=all", "--config="+config)
+	cmd := exec.Command(filepath.Join(constants.BaseInstallDir, "kubeadm"), "init", "--ignore-preflight-errors=all", "--config="+config)
+	err := cmd.Run()
+	if err != nil {
+		log.Fatalf("failed to run %q: %s", strings.Join(cmd.Args, " "), err)
+	}
 }
 
 func init() {

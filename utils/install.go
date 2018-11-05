@@ -16,7 +16,6 @@ import (
 
 	"github.com/platform9/nodeadm/apis"
 	"github.com/platform9/nodeadm/constants"
-	"github.com/platform9/nodeadm/deprecated"
 	"github.com/platform9/nodeadm/systemd"
 	netutil "k8s.io/apimachinery/pkg/util/net"
 )
@@ -81,7 +80,8 @@ func placeKubeletSystemAndDropinFiles(netConfig apis.Networking, kubeletConfig *
 
 func placeAndModifyKubeletServiceFile() {
 	serviceFile := filepath.Join(constants.SystemdDir, "kubelet.service")
-	deprecated.Run("", "cp", filepath.Join(constants.CacheDir, constants.KubeDirName, "kubelet.service"), serviceFile)
+	_, err := copyFile(filepath.Join(constants.CacheDir, constants.KubeDirName, "kubelet.service"), serviceFile)
+	checkError(err, "Unable to copy file")
 	ReplaceString(serviceFile, "/usr/bin", constants.BaseInstallDir)
 }
 
@@ -91,7 +91,8 @@ func placeAndModifyKubeadmKubeletSystemdDropin() {
 		log.Fatalf("\nFailed to create dir with error %v", err)
 	}
 	confFile := filepath.Join(constants.SystemdDir, "kubelet.service.d", constants.KubeadmKubeletSystemdDropinFilename)
-	deprecated.Run("", "cp", filepath.Join(constants.CacheDir, constants.KubeDirName, constants.KubeadmKubeletSystemdDropinFilename), confFile)
+	_, err = copyFile(filepath.Join(constants.CacheDir, constants.KubeDirName, constants.KubeadmKubeletSystemdDropinFilename), confFile)
+	checkError(err, "Unable to copy file")
 	ReplaceString(confFile, "/usr/bin", constants.BaseInstallDir)
 }
 
@@ -138,20 +139,43 @@ func placeAndModifyNodeadmKubeletSystemdDropin(netConfig apis.Networking, kubele
 }
 
 func placeKubeComponents() {
-	deprecated.Run("", "cp", filepath.Join(constants.CacheDir, constants.KubeDirName, "kubectl"), filepath.Join(constants.BaseInstallDir, "kubectl"))
-	deprecated.Run("", "cp", filepath.Join(constants.CacheDir, constants.KubeDirName, "kubeadm"), filepath.Join(constants.BaseInstallDir, "kubeadm"))
-	deprecated.Run("", "cp", filepath.Join(constants.CacheDir, constants.KubeDirName, "kubelet"), filepath.Join(constants.BaseInstallDir, "kubelet"))
+	_, err := copyFile(filepath.Join(constants.CacheDir, constants.KubeDirName, "kubectl"), filepath.Join(constants.BaseInstallDir, "kubectl"))
+	checkError(err, "Unable to copy file")
+	_, err = copyFile(filepath.Join(constants.CacheDir, constants.KubeDirName, "kubeadm"), filepath.Join(constants.BaseInstallDir, "kubeadm"))
+	checkError(err, "Unable to copy file")
+	_, err = copyFile(filepath.Join(constants.CacheDir, constants.KubeDirName, "kubelet"), filepath.Join(constants.BaseInstallDir, "kubelet"))
+	checkError(err, "Unable to copy file")
+}
+
+func checkError(err error, message string) {
+	if err != nil {
+		log.Fatalf("%s: %s", message, err)
+	}
+}
+
+func copyFile(src string, dst string) ([]byte, error) {
+	cmd := exec.Command("cp", src, dst)
+	out, err := cmd.Output()
+	if err != nil {
+		return nil, fmt.Errorf("failed to run %q: %s", strings.Join(cmd.Args, " "), err)
+	}
+	return out, err
 }
 
 func placeCNIPlugin() {
 	tmpFile := fmt.Sprintf("cni-plugins-amd64-%s.tgz", constants.CNIVersion)
-	deprecated.Run("", "cp", filepath.Join(constants.CacheDir, constants.CNIDirName, tmpFile), filepath.Join("/tmp", tmpFile))
-	if _, err := os.Stat(constants.CniVersionInstallDir); os.IsNotExist(err) {
+	_, err := copyFile(filepath.Join(constants.CacheDir, constants.CNIDirName, tmpFile), filepath.Join("/tmp", tmpFile))
+	checkError(err, "Unable to copy file")
+	if _, err = os.Stat(constants.CniVersionInstallDir); os.IsNotExist(err) {
 		err := os.MkdirAll(constants.CniVersionInstallDir, constants.Execute)
 		if err != nil {
 			log.Fatalf("\nFailed to create dir %s with error %v", constants.CniVersionInstallDir, err)
 		}
-		deprecated.Run("", "tar", "-xvf", filepath.Join("/tmp", tmpFile), "-C", constants.CniVersionInstallDir)
+		cmd := exec.Command("tar", "-xvf", filepath.Join("/tmp", tmpFile), "-C", constants.CniVersionInstallDir)
+		err = cmd.Run()
+		if err != nil {
+			log.Fatalf("Failed to run %q: %s", strings.Join(cmd.Args, " "), err)
+		}
 		CreateSymLinks(constants.CniVersionInstallDir, constants.CNIBaseDir, true)
 	}
 
