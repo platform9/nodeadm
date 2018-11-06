@@ -15,7 +15,6 @@ const (
 	CNIConfigDir         = "/etc/cni"
 	CNIStateDir          = "/var/lib/cni"
 	SystemdDir           = "/etc/systemd/system"
-	ConfigDir            = "conf"
 	FlannelVersion       = "v0.10.0"
 	DefaultPodNetwork    = "10.244.0.0/16"
 	DefaultDNSIP         = "10.96.0.10"
@@ -29,6 +28,7 @@ const (
 	Execute              = 0744
 	Read                 = 0644 // TODO: Add PodPriority when introduced in kubeadm
 	FeatureGates         = "ExperimentalCriticalPodAnnotation=true"
+	Sysctl               = "/sbin/sysctl"
 )
 
 const (
@@ -42,7 +42,6 @@ var KubeDirName = filepath.Join("kubernetes", KubernetesVersion)
 var FlannelDirName = filepath.Join("flannel", FlannelVersion)
 var CNIDirName = filepath.Join("cni", CNIVersion)
 var CniVersionInstallDir = filepath.Join(CNIBaseDir, CNIVersion)
-var ConfInstallDir = filepath.Join(BaseInstallDir, ConfigDir)
 var ImagesCacheDir = filepath.Join(CacheDir, "images")
 
 const (

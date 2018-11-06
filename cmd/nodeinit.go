@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 
 	log "github.com/platform9/nodeadm/pkg/logrus"
 
@@ -14,7 +16,6 @@ import (
 
 	"github.com/platform9/nodeadm/apis"
 	"github.com/platform9/nodeadm/constants"
-	"github.com/platform9/nodeadm/deprecated"
 	"github.com/platform9/nodeadm/utils"
 	"github.com/spf13/cobra"
 )
@@ -68,15 +69,31 @@ var nodeCmdInit = &cobra.Command{
 }
 
 func networkInit(config *apis.InitConfiguration) {
-	file := filepath.Join(constants.ConfInstallDir, constants.FlannelManifestFilename)
+	file := filepath.Join(constants.CacheDir, constants.FlannelDirName, constants.FlannelManifestFilename)
 	log.Infof("\nPod network %s", config.MasterConfiguration.Networking.PodSubnet)
-	utils.ReplaceString(file, constants.DefaultPodNetwork, config.MasterConfiguration.Networking.PodSubnet)
-	deprecated.Run(constants.BaseInstallDir, "sysctl", "net.bridge.bridge-nf-call-iptables=1")
-	deprecated.Run(constants.BaseInstallDir, "kubectl", fmt.Sprintf("--kubeconfig=%s", constants.AdminKubeconfigFile), "apply", "-f", file)
+	manifestStr := utils.Substitute(file, constants.DefaultPodNetwork, config.MasterConfiguration.Networking.PodSubnet)
+
+	cmd := exec.Command(constants.Sysctl, "net.bridge.bridge-nf-call-iptables=1")
+	err := cmd.Run()
+	if err != nil {
+		log.Fatalf("failed to run %q: %s", strings.Join(cmd.Args, " "), err)
+	}
+
+	cmd = exec.Command(filepath.Join(constants.BaseInstallDir, "kubectl"), fmt.Sprintf("--kubeconfig=%s", constants.AdminKubeconfigFile), "apply", "-f", "-")
+	reader := strings.NewReader(manifestStr)
+	cmd.Stdin = reader
+	err = cmd.Run()
+	if err != nil {
+		log.Fatalf("failed to run %q: %s", strings.Join(cmd.Args, " "), err)
+	}
 }
 
 func kubeadmInit(config string) {
-	deprecated.Run(constants.BaseInstallDir, "kubeadm", "init", "--ignore-preflight-errors=all", "--config="+config)
+	cmd := exec.Command(filepath.Join(constants.BaseInstallDir, "kubeadm"), "init", "--ignore-preflight-errors=all", "--config="+config)
+	err := cmd.Run()
+	if err != nil {
+		log.Fatalf("failed to run %q: %s", strings.Join(cmd.Args, " "), err)
+	}
 }
 
 func init() {
