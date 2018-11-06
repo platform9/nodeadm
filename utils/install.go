@@ -236,10 +236,6 @@ vrrp_instance K8S_APISERVER {
 	state BACKUP
 	virtual_router_id {{.InitConfig.VIPConfiguration.RouterID}}
 	nopreempt
-	authentication {
-		auth_type AH
-		auth_pass ourownpassword
-	}
 	virtual_ipaddress {
 		{{.InitConfig.VIPConfiguration.IP}}
 	}
