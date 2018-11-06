@@ -42,7 +42,7 @@ func cleanupKeepalived() {
 		log.Fatalf("Failed to disable keepalived service: %v", err)
 	}
 	os.RemoveAll(filepath.Join(constants.SystemdDir, "keepalived.service"))
-	os.RemoveAll(filepath.Join(constants.SystemdDir, "keepalived.conf"))
+	os.Remove(constants.KeepalivedConfigFilename)
 }
 
 func cleanupKubelet() {
