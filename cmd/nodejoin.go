@@ -1,11 +1,14 @@
 package cmd
 
 import (
+	"os/exec"
+	"path/filepath"
+	"strings"
+
 	log "github.com/platform9/nodeadm/pkg/logrus"
 
 	"github.com/platform9/nodeadm/apis"
 	"github.com/platform9/nodeadm/constants"
-	"github.com/platform9/nodeadm/deprecated"
 	"github.com/platform9/nodeadm/utils"
 	"github.com/spf13/cobra"
 )
@@ -33,7 +36,11 @@ var nodeCmdJoin = &cobra.Command{
 }
 
 func kubeadmJoin(token, master, cahash string) {
-	deprecated.Run(constants.BaseInstallDir, "kubeadm", "join", "--ignore-preflight-errors=all", "--token", token, master, "--discovery-token-ca-cert-hash", cahash)
+	cmd := exec.Command(filepath.Join(constants.BaseInstallDir, "kubeadm"), "join", "--ignore-preflight-errors=all", "--token", token, master, "--discovery-token-ca-cert-hash", cahash)
+	err := cmd.Run()
+	if err != nil {
+		log.Fatalf("failed to run %q: %s", strings.Join(cmd.Args, " "), err)
+	}
 }
 
 func init() {

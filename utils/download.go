@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -14,7 +15,6 @@ import (
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/platform9/nodeadm/constants"
-	"github.com/platform9/nodeadm/deprecated"
 )
 
 type Artifact struct {
@@ -76,7 +76,11 @@ func loadAvailableImages(cli *client.Client) {
 		log.Errorf("\nFailed to list files from dir %s skipping loading images with err %v", constants.ImagesCacheDir, err)
 	}
 	for _, file := range files {
-		deprecated.Run("", "docker", "load", "-i", filepath.Join(constants.ImagesCacheDir, file.Name()))
+		cmd := exec.Command("docker", "load", "-i", filepath.Join(constants.ImagesCacheDir, file.Name()))
+		err = cmd.Run()
+		if err != nil {
+			log.Fatalf("failed to run %q: %s", strings.Join(cmd.Args, " "), err)
+		}
 	}
 }
 
@@ -99,13 +103,22 @@ func PopulateCache() {
 		}
 		if len(list) == 0 {
 			log.Infof("Trying to pull image %s", image)
-			deprecated.Run("", "docker", "pull", image)
+			cmd := exec.Command("docker", "pull", image)
+			err = cmd.Run()
+			if err != nil {
+				log.Fatalf("failed to run %q: %s", strings.Join(cmd.Args, " "), err)
+			}
+
 		}
 		list, err = cli.ImageList(context.Background(), types.ImageListOptions{
 			Filters: nameFilter,
 		})
 		imageFile := filepath.Join(constants.ImagesCacheDir, strings.Replace(list[0].ID, "sha256:", "", -1)+".tar")
-		deprecated.Run("", "docker", "save", image, "-o", imageFile)
+		cmd := exec.Command("docker", "save", image, "-o", imageFile)
+		err = cmd.Run()
+		if err != nil {
+			log.Fatalf("failed to run %q: %s", strings.Join(cmd.Args, " "), err)
+		}
 	}
 	for _, file := range NodeArtifact {
 		mode := constants.Read
