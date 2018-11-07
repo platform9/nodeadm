@@ -69,12 +69,15 @@ var nodeCmdInit = &cobra.Command{
 }
 
 func networkInit(config *apis.InitConfiguration) {
-	subnetCIDR := config.MasterConfiguration.Networking.PodSubnet
-	if len(subnetCidr) == 0 {
-		subnetCidr = config.MasterConfiguration.ControllerManagerExtraArgs[constants.ControllerManagerAllocateNodeCidrsKey]
+	file := filepath.Join(constants.CacheDir, constants.FlannelDirName, constants.FlannelManifestFilename)
+	podSubnetCIDR := config.MasterConfiguration.Networking.PodSubnet
+	if len(podSubnetCIDR) == 0 {
+		if value, ok := config.MasterConfiguration.ControllerManagerExtraArgs[constants.ControllerManagerClusterCIDRKey]; ok {
+			podSubnetCIDR = value
+		}
 	}
-	log.Infof("Pod network %s", subnetCidr)
-	manifestStr := utils.Substitute(file, constants.DefaultPodNetwork, config.MasterConfiguration.Networking.PodSubnet)
+	log.Infof("Pod network %s", podSubnetCIDR)
+	manifestStr := utils.Substitute(file, constants.DefaultPodNetwork, podSubnetCIDR)
 
 	cmd := exec.Command(constants.Sysctl, "net.bridge.bridge-nf-call-iptables=1")
 	err := cmd.Run()

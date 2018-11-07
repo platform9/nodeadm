@@ -30,17 +30,17 @@ const (
 	Read                                  = 0644 // TODO: Add PodPriority when introduced in kubeadm
 	FeatureGates                          = "ExperimentalCriticalPodAnnotation=true"
 	Sysctl                                = "/sbin/sysctl"
-	ControllerManagerAllocateNodeCidrsKey = "allocate-node-cidrs"
-	ControllerManagerClusterCidrKey       = "cluster-cidr"
-	ControllerManagerNodeCidrMaskSizeKey  = "node-cidr-mask-size"
+	ControllerManagerAllocateNodeCIDRsKey = "allocate-node-cidrs"
+	ControllerManagerClusterCIDRKey       = "cluster-cidr"
+	ControllerManagerNodeCIDRMaskSizeKey  = "node-cidr-mask-size"
 	// TODO(puneet) remove when we move to 1.11.
 	// Currently set it similar to upstream
 	// https://github.com/kubernetes/kubernetes/blob/v1.10.4/cmd/kubeadm/app/phases/controlplane/manifests.go#L281
-	ControllerManagerNodeCidrMaskSizeValue = "24"
+	ControllerManagerNodeCIDRMaskSize = "24"
 	// TODO(puneet) remove when we move to 1.11.
 	// Currently set it similar to upstream
 	// https://github.com/kubernetes/kubernetes/blob/v1.10.4/cmd/kubeadm/app/phases/controlplane/manifests.go#L340
-	ControllerManagerAllocateNodeCidrsValue = "true"
+	ControllerManagerAllocateNodeCIDRs = "true"
 )
 
 const (
