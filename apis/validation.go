@@ -3,33 +3,160 @@ package apis
 import (
 	"fmt"
 
-	"github.com/platform9/nodeadm/constants"
+	log "github.com/platform9/nodeadm/pkg/logrus"
+
+	"github.com/Jeffail/gabs"
 )
 
 // ValidateInit validates the configuration used by the init verb
 func ValidateInit(config *InitConfiguration) []error {
 	var errorList []error
-	if config.MasterConfiguration.Networking.ServiceSubnet != config.Networking.ServiceSubnet {
-		errorList = append(errorList, fmt.Errorf("configuration conflict: Networking.ServiceSubnet=%q, MasterConfiguration.Networking.ServiceSubnet=%q. Values should be identical, or MasterConfiguration.Networking.ServiceSubnet omitted",
-			config.Networking.ServiceSubnet, config.MasterConfiguration.Networking.ServiceSubnet))
+	if err := vipAndControlPlaneEndpointAreEqual(config); err != nil {
+		errorList = append(errorList, err)
 	}
-	if len(config.MasterConfiguration.Networking.PodSubnet) == 0 {
-		// Pod subnet was set through MasterConfiguration.ControllerManagerExtraArgs
-		value, ok := config.MasterConfiguration.ControllerManagerExtraArgs[constants.ControllerManagerClusterCIDRKey]
-		if !ok || value != config.Networking.PodSubnet {
-			errorList = append(errorList, fmt.Errorf("configuration conflict: Networking.PodSubnet=%q, MasterConfiguration.ControllerManagerExtraArgs[%q]. Values should be identical, or MasterConfiguration.ControllerManagerExtraArgs[%q] omitted",
-				config.Networking.PodSubnet, constants.ControllerManagerClusterCIDRKey, constants.ControllerManagerClusterCIDRKey))
-		}
-	} else {
-		// Pod subnet was set through MasterConfiguration.Networking.PodSubnet
-		if config.MasterConfiguration.Networking.PodSubnet != config.Networking.PodSubnet {
-			errorList = append(errorList, fmt.Errorf("Configuration conflict: Networking.PodSubnet=%q, MasterConfiguration.Networking.PodSubnet=%q. Values should be identical, or MasterConfiguration.Networking.PodSubnet omitted.",
-				config.Networking.PodSubnet, config.MasterConfiguration.Networking.PodSubnet))
-		}
+	if err := podSubnetDefined(config); err != nil {
+		errorList = append(errorList, err)
 	}
-	if config.MasterConfiguration.Networking.DNSDomain != config.Networking.DNSDomain {
-		errorList = append(errorList, fmt.Errorf("configuration conflict: Networking.DNSDomain=%q, MasterConfiguration.Networking.DNSDomain=%q. Values should be identical, or MasterConfiguration.Networking.DNSDomain omitted",
-			config.Networking.DNSDomain, config.MasterConfiguration.Networking.DNSDomain))
+	if err := kubernetesVersionDefined(config); err != nil {
+		errorList = append(errorList, err)
 	}
 	return errorList
+}
+
+// ValidateJoin validates the configuration used by the join verb
+func ValidateJoin(config *JoinConfiguration) []error {
+	var errorList []error
+	if err := tokenDefined(config); err != nil {
+		errorList = append(errorList, err)
+	}
+	if err := discoveryTokenAPIServersDefined(config); err != nil {
+		errorList = append(errorList, err)
+	}
+	if err := discoveryTokenCACertHashesDefined(config); err != nil {
+		errorList = append(errorList, err)
+	}
+	return errorList
+}
+
+// vipAndControlPlaneEndpointAreEqual checks that vipConfiguration.IP and
+// masterConfiguration.api.controlPlaneEndpoint are equal, if
+// vipConfiguration.IP is defined.
+func vipAndControlPlaneEndpointAreEqual(config *InitConfiguration) error {
+	if config.VIPConfiguration == nil {
+		return nil
+	}
+	p, err := gabs.Consume(config.MasterConfiguration)
+	if err != nil {
+		return fmt.Errorf("unable to parse masterConfiguration: %s", err)
+	}
+
+	if !p.ExistsP("api.controlPlaneEndpoint") {
+		return fmt.Errorf("masterConfiguration.api.controlPlaneEndpoint must be equal to vipConfiguration.IP")
+	}
+	cep, ok := p.Path("api.controlPlaneEndpoint").Data().(string)
+	if !ok {
+		return fmt.Errorf("masterConfiguration.api.controlPlaneEndpoint must be a string")
+	}
+	if cep != config.VIPConfiguration.IP {
+		return fmt.Errorf("masterConfiguration.api.controlPlaneEndpoint must be equal to vipConfiguration.IP")
+	}
+	return nil
+}
+
+// podSubnetDefined checks that masterConfiguration.networking.podSubnet is
+// defined
+func podSubnetDefined(config *InitConfiguration) error {
+	p, err := gabs.Consume(config.MasterConfiguration)
+	if err != nil {
+		return fmt.Errorf("unable to parse masterConfiguration: %s", err)
+	}
+	if !p.ExistsP("networking.podSubnet") {
+		return fmt.Errorf("masterConfiguration.networking.podSubnet must be defined for flannel to work")
+	}
+	return nil
+}
+
+// kubernetesVersionDefined checks that masterConfiguration.kubernetesVersion is
+// defined
+func kubernetesVersionDefined(config *InitConfiguration) error {
+	p, err := gabs.Consume(config.MasterConfiguration)
+	if err != nil {
+		return fmt.Errorf("unable to parse masterConfiguration: %s", err)
+	}
+	if !p.ExistsP("kubernetesVersion") {
+		log.Warn("masterConfiguration.kubernetesVersion must be defined when internet egress is not available")
+	}
+	return nil
+}
+
+// tokenDefined checks that nodeConfiguration.token is defined
+func tokenDefined(config *JoinConfiguration) error {
+	p, err := gabs.Consume(config.NodeConfiguration)
+	if err != nil {
+		return fmt.Errorf("unable to parse nodeConfiguration: %s", err)
+	}
+	if !p.ExistsP("token") {
+		return fmt.Errorf("nodeConfiguration.token must be defined")
+	}
+	return nil
+}
+
+// discoveryTokenCACertHashesDefined checks that
+// nodeConfiguration.discoveryTokenCACertHashes has at least non-empty item
+func discoveryTokenCACertHashesDefined(config *JoinConfiguration) error {
+	p, err := gabs.Consume(config.NodeConfiguration)
+	if err != nil {
+		return fmt.Errorf("unable to parse nodeConfiguration: %s", err)
+	}
+	if !p.ExistsP("discoveryTokenCACertHashes") {
+		return fmt.Errorf("nodeConfiguration.discoveryTokenCACertHashes must be defined")
+	}
+	hashkey := p.Path("discoveryTokenCACertHashes")
+	children, err := hashkey.Children()
+	if err != nil {
+		return fmt.Errorf("unable to parse nodeConfiguration.discoveryTokenCACertHashes")
+	}
+	if len(children) == 0 {
+		return fmt.Errorf("nodeConfiguration.discoveryTokenCACertHashes array must have at least one item")
+	}
+	for i, child := range children {
+		hash, ok := child.Data().(string)
+		if !ok {
+			return fmt.Errorf("nodeConfiguration.discoveryTokenCACertHashes[%d] must be a string", i)
+		}
+		if hash == "" {
+			return fmt.Errorf("nodeConfiguration.discoveryTokenCACertHashes[%d] is an empty string", i)
+		}
+	}
+	return nil
+}
+
+// discoveryTokenAPIServersDefined checks that
+// nodeConfiguration.discoveryTokenAPIServers has at least non-empty item
+func discoveryTokenAPIServersDefined(config *JoinConfiguration) error {
+	p, err := gabs.Consume(config.NodeConfiguration)
+	if err != nil {
+		return fmt.Errorf("unable to parse nodeConfiguration: %s", err)
+	}
+	if !p.ExistsP("discoveryTokenAPIServers") {
+		return fmt.Errorf("nodeConfiguration.discoveryTokenAPIServers must be defined")
+	}
+	hashkey := p.Path("discoveryTokenAPIServers")
+	children, err := hashkey.Children()
+	if err != nil {
+		return fmt.Errorf("unable to parse nodeConfiguration.discoveryTokenAPIServers")
+	}
+	if len(children) == 0 {
+		return fmt.Errorf("nodeConfiguration.discoveryTokenAPIServers array must have at least one item")
+	}
+	for i, child := range children {
+		hash, ok := child.Data().(string)
+		if !ok {
+			return fmt.Errorf("nodeConfiguration.discoveryTokenAPIServers[%d] must be a string", i)
+		}
+		if hash == "" {
+			return fmt.Errorf("nodeConfiguration.discoveryTokenAPIServers[%d] is an empty string", i)
+		}
+	}
+	return nil
 }

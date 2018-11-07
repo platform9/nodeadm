@@ -9,15 +9,12 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/Jeffail/gabs"
 	log "github.com/platform9/nodeadm/pkg/logrus"
-
-	kubeadmconstants "k8s.io/kubernetes/cmd/kubeadm/app/constants"
-	kubeletconfigv1beta1 "k8s.io/kubernetes/pkg/kubelet/apis/kubeletconfig/v1beta1"
 
 	"github.com/platform9/nodeadm/apis"
 	"github.com/platform9/nodeadm/constants"
 	"github.com/platform9/nodeadm/systemd"
-	netutil "k8s.io/apimachinery/pkg/util/net"
 )
 
 func InstallMasterComponents(config *apis.InitConfiguration) {
@@ -30,7 +27,8 @@ func InstallMasterComponents(config *apis.InitConfiguration) {
 	if err := systemd.DisableIfEnabled("kubelet.service"); err != nil {
 		log.Fatalf("Failed to install kubelet service: %v", err)
 	}
-	placeKubeletSystemAndDropinFiles(config.Networking, config.Kubelet)
+	placeAndModifyKubeletServiceFile()
+	placeAndModifyKubeadmKubeletSystemdDropin()
 	if err := systemd.Enable("kubelet.service"); err != nil {
 		log.Fatalf("Failed to install kubelet service: %v", err)
 	}
@@ -44,7 +42,9 @@ func InstallMasterComponents(config *apis.InitConfiguration) {
 		if err := systemd.DisableIfEnabled("keepalived.service"); err != nil {
 			log.Fatalf("Failed to install keepalived service: %v", err)
 		}
-		writeKeepAlivedServiceFiles(config)
+		if err := writeKeepAlivedServiceFiles(config); err != nil {
+			log.Fatalf("Failed to configure keepalived: %v", err)
+		}
 		if err := systemd.Enable("keepalived.service"); err != nil {
 			log.Fatalf("Failed to install keepalived service: %v", err)
 		}
@@ -54,7 +54,7 @@ func InstallMasterComponents(config *apis.InitConfiguration) {
 	}
 }
 
-func InstallNodeComponents(config *apis.JoinConfiguration) {
+func InstallNodeComponents() {
 	PopulateCache()
 	placeKubeComponents()
 	placeCNIPlugin()
@@ -64,19 +64,14 @@ func InstallNodeComponents(config *apis.JoinConfiguration) {
 	if err := systemd.DisableIfEnabled("kubelet.service"); err != nil {
 		log.Fatalf("Failed to install kubelet service: %v", err)
 	}
-	placeKubeletSystemAndDropinFiles(config.Networking, config.Kubelet)
+	placeAndModifyKubeletServiceFile()
+	placeAndModifyKubeadmKubeletSystemdDropin()
 	if err := systemd.Enable("kubelet.service"); err != nil {
 		log.Fatalf("Failed to install kubelet service: %v", err)
 	}
 	if err := systemd.Start("kubelet.service"); err != nil {
 		log.Fatalf("Failed to install kubelet service: %v", err)
 	}
-}
-
-func placeKubeletSystemAndDropinFiles(netConfig apis.Networking, kubeletConfig *kubeletconfigv1beta1.KubeletConfiguration) {
-	placeAndModifyKubeletServiceFile()
-	placeAndModifyKubeadmKubeletSystemdDropin()
-	placeAndModifyNodeadmKubeletSystemdDropin(netConfig, kubeletConfig)
 }
 
 func placeAndModifyKubeletServiceFile() {
@@ -95,54 +90,6 @@ func placeAndModifyKubeadmKubeletSystemdDropin() {
 	_, err = copyFile(filepath.Join(constants.CacheDir, constants.KubeDirName, constants.KubeadmKubeletSystemdDropinFilename), confFile)
 	checkError(err, "Unable to copy file")
 	ReplaceString(confFile, "/usr/bin", constants.BaseInstallDir)
-}
-
-func placeAndModifyNodeadmKubeletSystemdDropin(netConfig apis.Networking, kubeletConfig *kubeletconfigv1beta1.KubeletConfiguration) {
-	err := os.MkdirAll(filepath.Join(constants.SystemdDir, "kubelet.service.d"), constants.Execute)
-	if err != nil {
-		log.Fatalf("\nFailed to create dir with error %v", err)
-	}
-	confFile := filepath.Join(constants.SystemdDir, "kubelet.service.d", constants.NodeadmKubeletSystemdDropinFilename)
-
-	dnsIP, err := kubeadmconstants.GetDNSIP(netConfig.ServiceSubnet)
-	if err != nil {
-		log.Fatalf("Failed to derive DNS IP from service subnet %q: %v", netConfig.ServiceSubnet, err)
-	}
-
-	hostnameOverride, err := constants.GetHostnameOverride()
-	if err != nil {
-		log.Fatalf("Failed to dervice hostname override: %v", err)
-	}
-
-	data := struct {
-		FailSwapOn       bool
-		MaxPods          int32
-		ClusterDNS       string
-		ClusterDomain    string
-		HostnameOverride string
-		KubeAPIQPS       int32
-		KubeAPIBurst     int32
-		EvictionHard     string
-		FeatureGates     string
-		CPUManagerPolicy string
-		KubeReservedCPU  string
-	}{
-		FailSwapOn:       *kubeletConfig.FailSwapOn,
-		MaxPods:          kubeletConfig.MaxPods,
-		ClusterDNS:       dnsIP.String(),
-		ClusterDomain:    netConfig.DNSDomain,
-		HostnameOverride: hostnameOverride,
-		KubeAPIQPS:       *kubeletConfig.KubeAPIQPS,
-		KubeAPIBurst:     kubeletConfig.KubeAPIBurst,
-		EvictionHard:     constants.KubeletEvictionHard,
-		FeatureGates:     constants.FeatureGates,
-		CPUManagerPolicy: kubeletConfig.CPUManagerPolicy,
-	}
-	if value, ok := kubeletConfig.KubeReserved[constants.KubeletConfigKubeReservedCPUKey]; ok {
-		data.KubeReservedCPU = fmt.Sprintf("%q=%q", constants.KubeletConfigKubeReservedCPUKey, value)
-	}
-
-	writeTemplateIntoFile(constants.NodeadmKubeletSystemdDropinTemplate, "nodeadm-kubelet-systemd-dropin", confFile, data)
 }
 
 func placeKubeComponents() {
@@ -207,38 +154,31 @@ func writeTemplateIntoFile(tmpl, name, file string, data interface{}) {
 	}
 }
 
-func writeKeepAlivedServiceFiles(config *apis.InitConfiguration) {
-	log.Infof("\nVip configuration as parsed from the file %v", config)
-	if len(config.VIPConfiguration.IP) == 0 {
-		ip, err := netutil.ChooseHostInterface()
-		if err != nil {
-			log.Fatalf("Failed to get default interface with err %v", err)
-		}
-		config.VIPConfiguration.IP = ip.String()
+func writeKeepAlivedServiceFiles(config *apis.InitConfiguration) error {
+	p, err := gabs.Consume(config.MasterConfiguration)
+	if err != nil {
+		return fmt.Errorf("unable to parse masterConfiguration: %s", err)
 	}
 
-	if len(config.VIPConfiguration.NetworkInterface) == 0 {
-		cmdStr := "route | grep '^default' | grep -o '[^ ]*$'"
-		cmd := exec.Command("bash", "-c", cmdStr)
-		bytes, err := cmd.CombinedOutput()
-		if err != nil {
-			log.Fatalf("Failed to get default interface with err %v", err)
-		}
-		config.VIPConfiguration.NetworkInterface = strings.Trim(string(bytes), "\n ")
+	v := p.Path("api.bindPort").Data()
+	if v == nil {
+		return fmt.Errorf("masterConfiguration.api.bindPort is not defined. This is a bug, please file an issue on github.com/platform9/nodeadm")
 	}
-
-	if config.VIPConfiguration.RouterID == 0 {
-		config.VIPConfiguration.RouterID = constants.DefaultRouterID
+	apiBindPort, ok := v.(int)
+	if !ok {
+		return fmt.Errorf("unable to parse masterConfiguration.api.bindPort")
 	}
 
 	configTemplateVals := struct {
-		InitConfig         *apis.InitConfiguration
+		VIPConfiguration   *apis.VIPConfiguration
+		APIBindPort        int
 		VRRPScriptInterval int
 		VRRPScriptRise     int
 		VRRPScriptFall     int
 		WgetTimeout        int
 	}{
-		InitConfig:         config,
+		VIPConfiguration:   config.VIPConfiguration,
+		APIBindPort:        apiBindPort,
 		VRRPScriptInterval: constants.VRRPScriptInterval,
 		VRRPScriptRise:     constants.VRRPScriptRise,
 		VRRPScriptFall:     constants.VRRPScriptFall,
@@ -249,19 +189,19 @@ func writeKeepAlivedServiceFiles(config *apis.InitConfiguration) {
 }
 
 vrrp_script chk_apiserver {
-	script "/usr/bin/wget -T {{.WgetTimeout}} -qO /dev/null https://127.0.0.1:{{.InitConfig.MasterConfiguration.API.BindPort}}/healthz"
+	script "/usr/bin/wget -T {{.WgetTimeout}} -qO /dev/null https://127.0.0.1:{{.APIBindPort}}/healthz"
 	interval {{.VRRPScriptInterval}}
 	fall {{.VRRPScriptFall}}
 	rise {{.VRRPScriptRise}}
 }
 
 vrrp_instance K8S_APISERVER {
-	interface {{.InitConfig.VIPConfiguration.NetworkInterface}}
+	interface {{.VIPConfiguration.NetworkInterface}}
 	state BACKUP
-	virtual_router_id {{.InitConfig.VIPConfiguration.RouterID}}
+	virtual_router_id {{.VIPConfiguration.RouterID}}
 	nopreempt
 	virtual_ipaddress {
-		{{.InitConfig.VIPConfiguration.IP}}
+		{{.VIPConfiguration.IP}}
 	}
 	track_script {
 		chk_apiserver
@@ -294,4 +234,6 @@ WantedBy=multi-user.target
 	}
 	kaServiceData := KaServiceData{constants.KeepalivedConfigFilename, constants.KeepalivedImage}
 	writeTemplateIntoFile(kaSvcFileTemplate, "kaSvcFileTemplate", filepath.Join(constants.SystemdDir, "keepalived.service"), kaServiceData)
+
+	return nil
 }
