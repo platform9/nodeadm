@@ -4,80 +4,78 @@ import (
 	"fmt"
 
 	"github.com/platform9/nodeadm/constants"
-	kubeadmv1alpha1 "k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm/v1alpha1"
+	log "github.com/platform9/nodeadm/pkg/logrus"
+	netutil "github.com/platform9/nodeadm/pkg/util/net"
+
+	"github.com/Jeffail/gabs"
 )
 
 // SetInitDefaults sets defaults on the configuration used by init
 func SetInitDefaults(config *InitConfiguration) {
-	// First set Networking defaults
-	SetNetworkingDefaults(&config.Networking)
-	// Second set MasterConfiguration.Networking defaults
-	SetMasterConfigurationNetworkingDefaultsWithNetworking(config)
-	// Third use the remainder of MasterConfiguration defaults
-	kubeadmv1alpha1.SetDefaults_MasterConfiguration(&config.MasterConfiguration)
-	config.MasterConfiguration.Kind = "MasterConfiguration"
-	config.MasterConfiguration.APIVersion = "kubeadm.k8s.io/v1alpha1"
-	config.MasterConfiguration.KubernetesVersion = constants.KubernetesVersion
-	config.MasterConfiguration.NoTaintMaster = true
-	addOrAppend(&config.MasterConfiguration.APIServerExtraArgs, "feature-gates", constants.FeatureGates)
-	addOrAppend(&config.MasterConfiguration.ControllerManagerExtraArgs, "feature-gates", constants.FeatureGates)
-	addOrAppend(&config.MasterConfiguration.SchedulerExtraArgs, "feature-gates", constants.FeatureGates)
 }
 
 // SetInitDynamicDefaults sets defaults derived at runtime
 func SetInitDynamicDefaults(config *InitConfiguration) error {
-	nodeName, err := constants.GetHostnameOverride()
-	if err != nil {
-		return fmt.Errorf("unable to dervice hostname override: %v", err)
+	if err := setAPIBindPort(config); err != nil {
+		return fmt.Errorf("unable to set a default value for masterConfiguration.api.bindPort: %s", err)
 	}
-	config.MasterConfiguration.NodeName = nodeName
+	if err := setAPIControlPlaneEndpoint(config); err != nil {
+		return fmt.Errorf("unable to set a default value for masterConfiguration.api.controlPlaneEndpoint: %s", err)
+	}
+	if err := setKeepalivedInterface(config); err != nil {
+		return fmt.Errorf("unable to set a default value for vipConfiguraton.networkInterface: %s", err)
+	}
 	return nil
 }
 
-// SetJoinDefaults sets defaults on the configuration used by join
-func SetJoinDefaults(config *JoinConfiguration) {
-	SetNetworkingDefaults(&config.Networking)
+func setAPIBindPort(config *InitConfiguration) error {
+	p, err := gabs.Consume(config.MasterConfiguration)
+	if err != nil {
+		return fmt.Errorf("unable to parse kubeadm MasterConfiguration: %s", err)
+	}
+	if p.ExistsP("api.bindPort") {
+		return nil
+	}
+	log.Infof("Setting masterConfiguration.api.bindPort to %d", constants.DefaultAPIBindPort)
+	_, err = p.SetP(constants.DefaultAPIBindPort, "api.bindPort")
+	if err != nil {
+		return fmt.Errorf("unable to set kubeadm MasterConfiguration.api.bindPort: %s", err)
+	}
+	return nil
 }
 
-// SetNetworkingDefaults sets defaults for the network configuration
-func SetNetworkingDefaults(netConfig *Networking) {
-	if netConfig.ServiceSubnet == "" {
-		netConfig.ServiceSubnet = constants.DefaultServiceSubnet
+// setAPIControlPlaneEndpoint sets the API ControlPlaneEndpoint to the VIP IP,
+// // if the VIP IP is defined, but the ControlPlaneEndpoint is not.
+func setAPIControlPlaneEndpoint(config *InitConfiguration) error {
+	if config.VIPConfiguration == nil {
+		return nil
 	}
-	if netConfig.DNSDomain == "" {
-		netConfig.DNSDomain = constants.DefaultDNSDomain
+	p, err := gabs.Consume(config.MasterConfiguration)
+	if err != nil {
+		return fmt.Errorf("unable to parse kubeadm MasterConfiguration: %s", err)
 	}
+	if p.ExistsP("api.controlPlaneEndpoint") {
+		return nil
+	}
+	log.Infof("Setting masterConfiguration.api.controlPlaneEndpoint equal to vipConfiguration.IP (%q)", config.VIPConfiguration.IP)
+	_, err = p.SetP(config.VIPConfiguration.IP, "api.controlPlaneEndpoint")
+	if err != nil {
+		return fmt.Errorf("unable to set kubeadm MasterConfiguration.api.controlPlaneEndpoint: %s", err)
+	}
+	return nil
 }
 
-// SetMasterConfigurationNetworkingDefaultsWithNetworking sets defaults with
-// values from the top-level network configuration
-func SetMasterConfigurationNetworkingDefaultsWithNetworking(config *InitConfiguration) {
-	if config.MasterConfiguration.Networking.ServiceSubnet == "" {
-		config.MasterConfiguration.Networking.ServiceSubnet = config.Networking.ServiceSubnet
+func setKeepalivedInterface(config *InitConfiguration) error {
+	if config.VIPConfiguration == nil {
+		return nil
 	}
-	// If MasterConfigurationNetworking.PodSubnet is provided directly, it takes precedence
-	if config.MasterConfiguration.Networking.PodSubnet == "" {
-		// Set controller manager extra args directly because of the issue
-		// https://github.com/kubernetes/kubeadm/issues/724
-		setControllerManagerExtraArgs(config)
+	if config.VIPConfiguration.NetworkInterface == "" {
+		iface, err := netutil.ChooseHostInterface()
+		if err != nil {
+			return err
+		}
+		log.Infof("Setting vipConfiguration.networkInterface to %s", iface)
+		config.VIPConfiguration.NetworkInterface = iface
 	}
-	if config.MasterConfiguration.Networking.DNSDomain == "" {
-		config.MasterConfiguration.Networking.DNSDomain = config.Networking.DNSDomain
-	}
-}
-
-func addOrAppend(extraArgs *map[string]string, key string, value string) {
-	// Create a new map if it doesn't exist.
-	if *extraArgs == nil {
-		*extraArgs = make(map[string]string)
-	}
-	// Add the key with the value if it doesn't exist. Otherwise, append the value
-	// to the pre-existing values.
-	prevFeatureGates := (*extraArgs)[key]
-	if prevFeatureGates == "" {
-		(*extraArgs)[key] = value
-	} else {
-		featureGates := prevFeatureGates + "," + value
-		(*extraArgs)[key] = featureGates
-	}
+	return nil
 }
