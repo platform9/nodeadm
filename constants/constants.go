@@ -27,7 +27,7 @@ const (
 	KeepalivedImage                       = "platform9/keepalived:v2.0.4"
 	CacheDir                              = "/var/cache/nodeadm/"
 	Execute                               = 0744
-	Read                                  = 0644 // TODO: Add PodPriority when introduced in kubeadm
+	Read                                  = 0644
 	FeatureGates                          = "ExperimentalCriticalPodAnnotation=true"
 	Sysctl                                = "/sbin/sysctl"
 	ControllerManagerAllocateNodeCIDRsKey = "allocate-node-cidrs"

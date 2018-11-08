@@ -16,6 +16,7 @@ import (
 
 	"github.com/platform9/nodeadm/apis"
 	"github.com/platform9/nodeadm/constants"
+	"github.com/platform9/nodeadm/defaults"
 	"github.com/platform9/nodeadm/utils"
 	"github.com/spf13/cobra"
 )
@@ -34,11 +35,11 @@ var nodeCmdInit = &cobra.Command{
 				log.Fatalf("Failed to read configuration from file %q: %v", configPath, err)
 			}
 		}
-		apis.SetInitDefaults(config)
-		if err := apis.SetInitDynamicDefaults(config); err != nil {
+		defaults.SetInitDefaults(config)
+		if err := defaults.SetInitDynamicDefaults(config); err != nil {
 			log.Fatalf("Failed to set dynamic defaults: %v", err)
 		}
-		if errors := apis.ValidateInit(config); len(errors) > 0 {
+		if errors := defaults.ValidateInit(config); len(errors) > 0 {
 			log.Error("Failed to validate configuration:")
 			for i, err := range errors {
 				log.Errorf("%v: %v", i, err)
