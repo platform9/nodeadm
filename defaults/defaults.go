@@ -1,14 +1,16 @@
-package apis
+package defaults
 
 import (
 	"fmt"
 
+	"github.com/platform9/nodeadm/apis"
 	"github.com/platform9/nodeadm/constants"
+	"github.com/platform9/nodeadm/workarounds"
 	kubeadmv1alpha1 "k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm/v1alpha1"
 )
 
 // SetInitDefaults sets defaults on the configuration used by init
-func SetInitDefaults(config *InitConfiguration) {
+func SetInitDefaults(config *apis.InitConfiguration) {
 	// First set Networking defaults
 	SetNetworkingDefaults(&config.Networking)
 	// Second set MasterConfiguration.Networking defaults
@@ -25,7 +27,7 @@ func SetInitDefaults(config *InitConfiguration) {
 }
 
 // SetInitDynamicDefaults sets defaults derived at runtime
-func SetInitDynamicDefaults(config *InitConfiguration) error {
+func SetInitDynamicDefaults(config *apis.InitConfiguration) error {
 	nodeName, err := constants.GetHostnameOverride()
 	if err != nil {
 		return fmt.Errorf("unable to dervice hostname override: %v", err)
@@ -35,12 +37,12 @@ func SetInitDynamicDefaults(config *InitConfiguration) error {
 }
 
 // SetJoinDefaults sets defaults on the configuration used by join
-func SetJoinDefaults(config *JoinConfiguration) {
+func SetJoinDefaults(config *apis.JoinConfiguration) {
 	SetNetworkingDefaults(&config.Networking)
 }
 
 // SetNetworkingDefaults sets defaults for the network configuration
-func SetNetworkingDefaults(netConfig *Networking) {
+func SetNetworkingDefaults(netConfig *apis.Networking) {
 	if netConfig.ServiceSubnet == "" {
 		netConfig.ServiceSubnet = constants.DefaultServiceSubnet
 	}
@@ -51,7 +53,7 @@ func SetNetworkingDefaults(netConfig *Networking) {
 
 // SetMasterConfigurationNetworkingDefaultsWithNetworking sets defaults with
 // values from the top-level network configuration
-func SetMasterConfigurationNetworkingDefaultsWithNetworking(config *InitConfiguration) {
+func SetMasterConfigurationNetworkingDefaultsWithNetworking(config *apis.InitConfiguration) {
 	if config.MasterConfiguration.Networking.ServiceSubnet == "" {
 		config.MasterConfiguration.Networking.ServiceSubnet = config.Networking.ServiceSubnet
 	}
@@ -59,16 +61,7 @@ func SetMasterConfigurationNetworkingDefaultsWithNetworking(config *InitConfigur
 	if config.MasterConfiguration.Networking.PodSubnet == "" {
 		// Set controller manager extra args directly because of the issue
 		// https://github.com/kubernetes/kubeadm/issues/724
-		// Defaults used here DONOT belong in cctl as these are part of implementation details for nodeadm
-		if _, ok := config.MasterConfiguration.ControllerManagerExtraArgs[constants.ControllerManagerAllocateNodeCidrsKey]; !ok {
-			config.MasterConfiguration.ControllerManagerExtraArgs[constants.ControllerManagerAllocateNodeCidrsKey] = constants.ControllerManagerAllocateNodeCidrsValue
-		}
-		if _, ok := config.MasterConfiguration.ControllerManagerExtraArgs[constants.ControllerManagerClusterCidrKey]; !ok {
-			config.MasterConfiguration.ControllerManagerExtraArgs[constants.ControllerManagerClusterCidrKey] = config.Networking.PodSubnet
-		}
-		if _, ok := config.MasterConfiguration.ControllerManagerExtraArgs[constants.ControllerManagerNodeCidrMaskSizeKey]; !ok {
-			config.MasterConfiguration.ControllerManagerExtraArgs[constants.ControllerManagerNodeCidrMaskSizeKey] = constants.ControllerManagerNodeCidrMaskSizeValue
-		}
+		workarounds.SetControllerManagerExtraArgs(config)
 	}
 	if config.MasterConfiguration.Networking.DNSDomain == "" {
 		config.MasterConfiguration.Networking.DNSDomain = config.Networking.DNSDomain
