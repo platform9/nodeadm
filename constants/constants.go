@@ -22,7 +22,7 @@ const (
 	DefaultDNSDomain                      = "cluster.local"
 	DefaultRouterID                       = 42
 	KubeadmConfig                         = "/tmp/kubeadm.yaml"
-	KubeDNSVersion                        = "1.14.8"
+	CoreDNSVersion                        = "1.1.3"
 	KeepalivedImage                       = "platform9/keepalived:v2.0.4"
 	CacheDir                              = "/var/cache/nodeadm/"
 	Execute                               = 0744
