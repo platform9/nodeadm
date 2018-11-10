@@ -8,9 +8,9 @@ SHELL := /usr/bin/env bash
 BIN := nodeadm
 PACKAGE_GOPATH := /go/src/github.com/platform9/$(BIN)
 LDFLAGS := $(shell source ./version.sh ; KUBE_ROOT=. ; KUBE_GIT_VERSION=${VERSION_OVERRIDE} ; kube::version::ldflags)
-GIT_STORAGE_MOUNT := $(shell source ./git_utils.sh; container_git_storage_mount) 
+GIT_STORAGE_MOUNT := $(shell source ./git_utils.sh; container_git_storage_mount)
 
-.PHONY: container-build default clean
+.PHONY: container-build default clean $(BIN)
 
 default: $(BIN)
 
@@ -21,4 +21,4 @@ clean:
 	rm -f $(BIN)
 
 $(BIN):
-	go build -ldflags "$(LDFLAGS)"
+	go build -v -ldflags "$(LDFLAGS)"
