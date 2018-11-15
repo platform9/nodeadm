@@ -12,11 +12,8 @@ import (
 
 	"github.com/ghodss/yaml"
 
-	"github.com/platform9/nodeadm/workarounds"
-
 	"github.com/platform9/nodeadm/apis"
 	"github.com/platform9/nodeadm/constants"
-	"github.com/platform9/nodeadm/defaults"
 	"github.com/platform9/nodeadm/utils"
 	"github.com/spf13/cobra"
 )
@@ -35,11 +32,11 @@ var nodeCmdInit = &cobra.Command{
 				log.Fatalf("Failed to read configuration from file %q: %v", configPath, err)
 			}
 		}
-		defaults.SetInitDefaults(config)
-		if err := defaults.SetInitDynamicDefaults(config); err != nil {
+		apis.SetInitDefaults(config)
+		if err := apis.SetInitDynamicDefaults(config); err != nil {
 			log.Fatalf("Failed to set dynamic defaults: %v", err)
 		}
-		if errors := defaults.ValidateInit(config); len(errors) > 0 {
+		if errors := apis.ValidateInit(config); len(errors) > 0 {
 			log.Error("Failed to validate configuration:")
 			for i, err := range errors {
 				log.Errorf("%v: %v", i, err)
@@ -61,7 +58,7 @@ var nodeCmdInit = &cobra.Command{
 		kubeadmInit(constants.KubeadmConfig)
 
 		log.Infoln("Applying workaround for https://github.com/kubernetes/kubeadm/issues/857")
-		if err := workarounds.EnsureKubeProxyRespectsHostoverride(); err != nil {
+		if err := ensureKubeProxyRespectsHostoverride(); err != nil {
 			log.Fatalf("Failed to apply workaround: %v", err)
 		}
 

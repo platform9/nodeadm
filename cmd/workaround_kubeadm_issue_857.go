@@ -1,4 +1,4 @@
-package workarounds
+package cmd
 
 import (
 	"bytes"
@@ -83,7 +83,7 @@ const (
 // EnsureKubeProxyRespectsHostoverride patches the kube-proxy daemonset so that
 // kube-proxy respects the hostnameOverride setting. The function is idempotent.
 // See: https://github.com/kubernetes/kubeadm/issues/857
-func EnsureKubeProxyRespectsHostoverride() error {
+func ensureKubeProxyRespectsHostoverride() error {
 	log.Infoln("[workarounds] Checking whether kube-proxy daemonset is patched")
 	patched, err := isPatchedKubeProxyDaemonSet()
 	if err != nil {
