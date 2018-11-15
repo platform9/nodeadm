@@ -1,14 +1,13 @@
-package defaults
+package apis
 
 import (
 	"fmt"
 
-	"github.com/platform9/nodeadm/apis"
 	"github.com/platform9/nodeadm/constants"
 )
 
 // ValidateInit validates the configuration used by the init verb
-func ValidateInit(config *apis.InitConfiguration) []error {
+func ValidateInit(config *InitConfiguration) []error {
 	var errorList []error
 	if config.MasterConfiguration.Networking.ServiceSubnet != config.Networking.ServiceSubnet {
 		errorList = append(errorList, fmt.Errorf("configuration conflict: Networking.ServiceSubnet=%q, MasterConfiguration.Networking.ServiceSubnet=%q. Values should be identical, or MasterConfiguration.Networking.ServiceSubnet omitted",

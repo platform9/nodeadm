@@ -1,12 +1,11 @@
-package workarounds
+package apis
 
 import (
-	"github.com/platform9/nodeadm/apis"
 	"github.com/platform9/nodeadm/constants"
 )
 
 // SetControllerManagerExtraArgs sets controller manager extra args for a given pod network subnet
-func SetControllerManagerExtraArgs(config *apis.InitConfiguration) {
+func setControllerManagerExtraArgs(config *InitConfiguration) {
 	if _, ok := config.MasterConfiguration.ControllerManagerExtraArgs[constants.ControllerManagerAllocateNodeCIDRsKey]; !ok {
 		config.MasterConfiguration.ControllerManagerExtraArgs[constants.ControllerManagerAllocateNodeCIDRsKey] = constants.ControllerManagerAllocateNodeCIDRs
 	}
