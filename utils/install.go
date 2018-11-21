@@ -123,6 +123,8 @@ func placeAndModifyNodeadmKubeletSystemdDropin(netConfig apis.Networking, kubele
 		KubeAPIBurst     int32
 		EvictionHard     string
 		FeatureGates     string
+		CPUManagerPolicy string
+		KubeReservedCPU  string
 	}{
 		FailSwapOn:       *kubeletConfig.FailSwapOn,
 		MaxPods:          kubeletConfig.MaxPods,
@@ -133,6 +135,10 @@ func placeAndModifyNodeadmKubeletSystemdDropin(netConfig apis.Networking, kubele
 		KubeAPIBurst:     kubeletConfig.KubeAPIBurst,
 		EvictionHard:     constants.KubeletEvictionHard,
 		FeatureGates:     constants.FeatureGates,
+		CPUManagerPolicy: kubeletConfig.CPUManagerPolicy,
+	}
+	if value, ok := kubeletConfig.KubeReserved[constants.KubeletConfigKubeReservedCPUKey]; ok {
+		data.KubeReservedCPU = fmt.Sprintf("%q=%q", constants.KubeletConfigKubeReservedCPUKey, value)
 	}
 
 	writeTemplateIntoFile(constants.NodeadmKubeletSystemdDropinTemplate, "nodeadm-kubelet-systemd-dropin", confFile, data)
