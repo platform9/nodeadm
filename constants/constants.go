@@ -41,6 +41,7 @@ const (
 	// Currently set it similar to upstream
 	// https://github.com/kubernetes/kubernetes/blob/v1.10.4/cmd/kubeadm/app/phases/controlplane/manifests.go#L340
 	ControllerManagerAllocateNodeCIDRs = "true"
+	KubeletConfigKubeReservedCPUKey    = "cpu"
 )
 
 const (
@@ -75,7 +76,7 @@ const (
 	NodeadmKubeletSystemdDropinFilename = "20-nodeadm.conf"
 	NodeadmKubeletSystemdDropinTemplate = `[Service]
 Environment="KUBELET_DNS_ARGS=--cluster-dns={{ .ClusterDNS }} --cluster-domain={{ .ClusterDomain }}"
-Environment="KUBELET_EXTRA_ARGS=--max-pods={{ .MaxPods }} --fail-swap-on={{ .FailSwapOn }} --hostname-override={{ .HostnameOverride }} --kube-api-qps={{ .KubeAPIQPS }} --kube-api-burst={{ .KubeAPIBurst }} --feature-gates={{ .FeatureGates}} --eviction-hard={{ .EvictionHard }}"
+Environment="KUBELET_EXTRA_ARGS=--max-pods={{ .MaxPods }} --fail-swap-on={{ .FailSwapOn }} --hostname-override={{ .HostnameOverride }} --kube-api-qps={{ .KubeAPIQPS }} --kube-api-burst={{ .KubeAPIBurst }} --feature-gates={{ .FeatureGates}} --eviction-hard={{ .EvictionHard }} --cpu-manager-policy={{ .CPUManagerPolicy }} --kube-reserved={{ .KubeReservedCPU }}"
 `
 )
 
