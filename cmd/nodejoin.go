@@ -9,7 +9,6 @@ import (
 
 	"github.com/platform9/nodeadm/apis"
 	"github.com/platform9/nodeadm/constants"
-	"github.com/platform9/nodeadm/defaults"
 	"github.com/platform9/nodeadm/utils"
 	"github.com/spf13/cobra"
 )
@@ -28,7 +27,7 @@ var nodeCmdJoin = &cobra.Command{
 				log.Fatalf("Failed to read configuration from file %q: %v", configPath, err)
 			}
 		}
-		defaults.SetJoinDefaults(config)
+		apis.SetJoinDefaults(config)
 		utils.InstallNodeComponents(config)
 		kubeadmJoin(cmd.Flag("token").Value.String(),
 			cmd.Flag("master").Value.String(),
