@@ -84,13 +84,23 @@ func cleanupNetworking() {
 	log.Infof("[nodeadm:reset] Removing flannel state files & resetting networking")
 	os.RemoveAll(constants.CNIConfigDir)
 	os.RemoveAll(constants.CNIStateDir)
-	_ = exec.Command("ip", "link", "del", "cni0").Run()
-	_ = exec.Command("ip", "link", "del", "flannel.1").Run()
+	cmd := exec.Command("ip", "link", "del", "cni0")
+	if err := cmd.Run(); err != nil {
+		log.Warnf("%q failed, continuing: %v", strings.Join(cmd.Args, " "), err)
+	}
+
+	cmd = exec.Command("ip", "link", "del", "flannel.1")
+	if err := cmd.Run(); err != nil {
+		log.Warnf("%q failed, continuing: %v", strings.Join(cmd.Args, " "), err)
+	}
 }
 
 func cleanupDockerImages() {
 	for _, image := range utils.GetImages() {
-		_ = exec.Command("docker", "rmi", image).Run()
+		cmd := exec.Command("docker", "rmi", image)
+		if err := cmd.Run(); err != nil {
+			log.Warnf("%q failed, continuing: %v", strings.Join(cmd.Args, " "), err)
+		}
 	}
 }
 
