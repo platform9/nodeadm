@@ -8,13 +8,13 @@ import (
 	"path/filepath"
 	"strings"
 
-	log "github.com/platform9/nodeadm/pkg/logrus"
-
 	"github.com/ghodss/yaml"
 
 	"github.com/platform9/nodeadm/apis"
 	"github.com/platform9/nodeadm/constants"
+	log "github.com/platform9/nodeadm/pkg/logrus"
 	"github.com/platform9/nodeadm/utils"
+	executil "github.com/platform9/nodeadm/utils/exec"
 	"github.com/spf13/cobra"
 )
 
@@ -95,7 +95,7 @@ func networkInit(config *apis.InitConfiguration) {
 
 func kubeadmInit(config string) {
 	cmd := exec.Command(filepath.Join(constants.BaseInstallDir, "kubeadm"), "init", "--ignore-preflight-errors=all", "--config="+config)
-	err := cmd.Run()
+	err := executil.LogRun(cmd)
 	if err != nil {
 		log.Fatalf("failed to run %q: %s", strings.Join(cmd.Args, " "), err)
 	}

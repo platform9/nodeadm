@@ -4,8 +4,10 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	log "github.com/platform9/nodeadm/pkg/logrus"
+	executil "github.com/platform9/nodeadm/utils/exec"
 
 	"github.com/platform9/nodeadm/constants"
 	"github.com/platform9/nodeadm/systemd"
@@ -30,7 +32,10 @@ var nodeCmdReset = &cobra.Command{
 
 func kubeadmReset() {
 	log.Infof("[nodeadm:reset] Invoking kubeadm reset")
-	_ = exec.Command(filepath.Join(constants.BaseInstallDir, "kubeadm"), "reset", "--ignore-preflight-errors=all").Run()
+	cmd := exec.Command(filepath.Join(constants.BaseInstallDir, "kubeadm"), "reset", "--ignore-preflight-errors=all")
+	if err := executil.LogRun(cmd); err != nil {
+		log.Warnf("kubeadm reset failed, continuing: %v", err)
+	}
 }
 
 func cleanupKeepalived() {
