@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	log "github.com/platform9/nodeadm/pkg/logrus"
+	executil "github.com/platform9/nodeadm/utils/exec"
 
 	"github.com/platform9/nodeadm/apis"
 	"github.com/platform9/nodeadm/constants"
@@ -37,7 +38,7 @@ var nodeCmdJoin = &cobra.Command{
 
 func kubeadmJoin(token, master, cahash string) {
 	cmd := exec.Command(filepath.Join(constants.BaseInstallDir, "kubeadm"), "join", "--ignore-preflight-errors=all", "--token", token, master, "--discovery-token-ca-cert-hash", cahash)
-	err := cmd.Run()
+	err := executil.LogRun(cmd)
 	if err != nil {
 		log.Fatalf("failed to run %q: %s", strings.Join(cmd.Args, " "), err)
 	}
