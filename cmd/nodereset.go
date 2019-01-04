@@ -24,7 +24,7 @@ var nodeCmdReset = &cobra.Command{
 		cleanupKubelet()
 		cleanupBinaries()
 		cleanupNetworking()
-		//cleanupDockerImages()
+		cleanupDockerImages()
 	},
 }
 
@@ -85,7 +85,7 @@ func cleanupNetworking() {
 
 func cleanupDockerImages() {
 	for _, image := range utils.GetImages() {
-		_ = exec.Command("docker", "rmi", "-f", image).Run()
+		_ = exec.Command("docker", "rmi", image).Run()
 	}
 }
 
