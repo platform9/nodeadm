@@ -85,6 +85,10 @@ func loadAvailableImages(cli *client.Client) {
 }
 
 func PopulateCache() {
+	if os.Getuid() != 0 {
+		log.Fatalf("Please run with root privileges.\n")
+		return
+	}
 	cli, err := client.NewEnvClient()
 	if err != nil {
 		log.Fatalf("Failed to create docker client with error %v", err)
