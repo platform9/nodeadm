@@ -2,6 +2,7 @@ package apis
 
 import (
 	"fmt"
+	"os/exec"
 
 	"github.com/platform9/nodeadm/constants"
 )
@@ -23,13 +24,20 @@ func ValidateInit(config *InitConfiguration) []error {
 	} else {
 		// Pod subnet was set through MasterConfiguration.Networking.PodSubnet
 		if config.MasterConfiguration.Networking.PodSubnet != config.Networking.PodSubnet {
-			errorList = append(errorList, fmt.Errorf("Configuration conflict: Networking.PodSubnet=%q, MasterConfiguration.Networking.PodSubnet=%q. Values should be identical, or MasterConfiguration.Networking.PodSubnet omitted.",
+			errorList = append(errorList, fmt.Errorf("configuration conflict: Networking.PodSubnet=%q, MasterConfiguration.Networking.PodSubnet=%q. Values should be identical, or MasterConfiguration.Networking.PodSubnet omitted",
 				config.Networking.PodSubnet, config.MasterConfiguration.Networking.PodSubnet))
 		}
 	}
 	if config.MasterConfiguration.Networking.DNSDomain != config.Networking.DNSDomain {
 		errorList = append(errorList, fmt.Errorf("configuration conflict: Networking.DNSDomain=%q, MasterConfiguration.Networking.DNSDomain=%q. Values should be identical, or MasterConfiguration.Networking.DNSDomain omitted",
 			config.Networking.DNSDomain, config.MasterConfiguration.Networking.DNSDomain))
+	}
+	if config.VIPConfiguration.RouterID != -1 {
+		iface := config.VIPConfiguration.NetworkInterface
+		err := exec.Command("ifconfig", "-a", iface).Run()
+		if err != nil {
+			errorList = append(errorList, fmt.Errorf("configuration conflict: VIPConfiguration.NetworkInterface=%q. Interface does not exist", iface))
+		}
 	}
 	return errorList
 }
