@@ -23,6 +23,7 @@ const (
 	DefaultRouterID                       = 42
 	KubeadmConfig                         = "/tmp/kubeadm.yaml"
 	CoreDNSVersion                        = "1.1.3"
+	PauseContainerVersion                 = "3.1"
 	KeepalivedImage                       = "platform9/keepalived:v2.0.4"
 	CacheDir                              = "/var/cache/nodeadm/"
 	Execute                               = 0744
