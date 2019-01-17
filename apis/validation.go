@@ -2,7 +2,7 @@ package apis
 
 import (
 	"fmt"
-	"os/exec"
+	"net"
 
 	"github.com/platform9/nodeadm/constants"
 )
@@ -34,9 +34,9 @@ func ValidateInit(config *InitConfiguration) []error {
 	}
 	if config.VIPConfiguration.RouterID != -1 {
 		iface := config.VIPConfiguration.NetworkInterface
-		err := exec.Command("ifconfig", "-a", iface).Run()
+		_, err := net.InterfaceByName(iface)
 		if err != nil {
-			errorList = append(errorList, fmt.Errorf("configuration conflict: VIPConfiguration.NetworkInterface=%q. Interface does not exist", iface))
+			errorList = append(errorList, fmt.Errorf("configuration conflict: VIPConfiguration.NetworkInterface=%q. %v", iface, err))
 		}
 	}
 	return errorList
