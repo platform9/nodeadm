@@ -283,7 +283,7 @@ ExecStart=/usr/bin/docker run --cap-add=NET_ADMIN \
 ExecStartPre=-/usr/bin/docker kill vip
 ExecStartPre=-/usr/bin/docker rm vip
 ExecStop=/usr/bin/docker stop vip
-ExecStop=/usr/bin/docker rm vip
+ExecStopPost=/usr/bin/docker rm vip
 Restart=on-failure
 MemoryLow=10M
 [Install]
