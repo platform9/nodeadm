@@ -3,6 +3,7 @@ package utils
 import (
 	"bufio"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -14,6 +15,7 @@ import (
 	kubeadmconstants "k8s.io/kubernetes/cmd/kubeadm/app/constants"
 	kubeletconfigv1beta1 "k8s.io/kubernetes/pkg/kubelet/apis/kubeletconfig/v1beta1"
 
+	"github.com/ghodss/yaml"
 	"github.com/platform9/nodeadm/apis"
 	"github.com/platform9/nodeadm/constants"
 	"github.com/platform9/nodeadm/systemd"
@@ -113,6 +115,20 @@ func placeAndModifyNodeadmKubeletSystemdDropin(netConfig apis.Networking, kubele
 	if err != nil {
 		log.Fatalf("Failed to dervice hostname override: %v", err)
 	}
+	log.Info("Running the new code")
+	remoteRuntime := ""
+	runtimeConfig := apis.RuntimeConfiguration{}
+	f, err := ioutil.ReadFile("/etc/nodeadm_override.yaml")
+	if err == nil {
+		err := yaml.Unmarshal(f, &runtimeConfig)
+		if err != nil {
+			log.Fatalf("Could not parse runtime value")
+		}
+	}
+	log.Infof("Value of runtime as read from override file = %s", runtimeConfig.Runtime)
+	if runtimeConfig.Runtime == "crio" {
+		remoteRuntime = "--container-runtime=remote --container-runtime-endpoint=/var/run/crio/crio.sock"
+	}
 
 	data := struct {
 		FailSwapOn       bool
@@ -126,6 +142,7 @@ func placeAndModifyNodeadmKubeletSystemdDropin(netConfig apis.Networking, kubele
 		FeatureGates     string
 		CPUManagerPolicy string
 		KubeReservedCPU  string
+		RemoteRuntime    string
 	}{
 		FailSwapOn:       *kubeletConfig.FailSwapOn,
 		MaxPods:          kubeletConfig.MaxPods,
@@ -137,6 +154,7 @@ func placeAndModifyNodeadmKubeletSystemdDropin(netConfig apis.Networking, kubele
 		EvictionHard:     constants.KubeletEvictionHard,
 		FeatureGates:     constants.FeatureGates,
 		CPUManagerPolicy: kubeletConfig.CPUManagerPolicy,
+		RemoteRuntime:    remoteRuntime,
 	}
 	if value, ok := kubeletConfig.KubeReserved[constants.KubeletConfigKubeReservedCPUKey]; ok {
 		data.KubeReservedCPU = fmt.Sprintf("%q=%q", constants.KubeletConfigKubeReservedCPUKey, value)

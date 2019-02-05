@@ -17,6 +17,10 @@ type InitConfiguration struct {
 	KeepAlived          map[string]string                               `json:"keepAlived"`
 }
 
+type RuntimeConfiguration struct {
+	Runtime string `json:"runtime"`
+}
+
 // JoinConfiguration specifies the configuration used by the join command
 type JoinConfiguration struct {
 	Networking Networking                                 `json:"networking"`

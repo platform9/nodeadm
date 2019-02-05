@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -11,8 +10,6 @@ import (
 
 	log "github.com/platform9/nodeadm/pkg/logrus"
 
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/platform9/nodeadm/constants"
 )
@@ -85,41 +82,42 @@ func loadAvailableImages(cli *client.Client) {
 }
 
 func PopulateCache() {
-	cli, err := client.NewEnvClient()
-	if err != nil {
-		log.Fatalf("Failed to create docker client with error %v", err)
-	}
-	loadAvailableImages(cli)
-	for _, image := range GetImages() {
-		//first check if image is already in docker cache
-		nameFilter := filters.NewArgs()
-		nameFilter.Add("reference", image)
-		log.Infof("Checking if image %s is available in docker cache", image)
-		list, err := cli.ImageList(context.Background(), types.ImageListOptions{
-			Filters: nameFilter,
-		})
+	/*
+		cli, err := client.NewEnvClient()
 		if err != nil {
-			log.Fatalf("\nFailed to list images with error %v", err)
+			log.Fatalf("Failed to create docker client with error %v", err)
 		}
-		if len(list) == 0 {
-			log.Infof("Trying to pull image %s", image)
-			cmd := exec.Command("docker", "pull", image)
+		loadAvailableImages(cli)
+		for _, image := range GetImages() {
+			//first check if image is already in docker cache
+			nameFilter := filters.NewArgs()
+			nameFilter.Add("reference", image)
+			log.Infof("Checking if image %s is available in docker cache", image)
+			list, err := cli.ImageList(context.Background(), types.ImageListOptions{
+				Filters: nameFilter,
+			})
+			if err != nil {
+				log.Fatalf("\nFailed to list images with error %v", err)
+			}
+			if len(list) == 0 {
+				log.Infof("Trying to pull image %s", image)
+				cmd := exec.Command("docker", "pull", image)
+				err = cmd.Run()
+				if err != nil {
+					log.Fatalf("failed to run %q: %s", strings.Join(cmd.Args, " "), err)
+				}
+
+			}
+			list, err = cli.ImageList(context.Background(), types.ImageListOptions{
+				Filters: nameFilter,
+			})
+			imageFile := filepath.Join(constants.ImagesCacheDir, strings.Replace(list[0].ID, "sha256:", "", -1)+".tar")
+			cmd := exec.Command("docker", "save", image, "-o", imageFile)
 			err = cmd.Run()
 			if err != nil {
 				log.Fatalf("failed to run %q: %s", strings.Join(cmd.Args, " "), err)
 			}
-
-		}
-		list, err = cli.ImageList(context.Background(), types.ImageListOptions{
-			Filters: nameFilter,
-		})
-		imageFile := filepath.Join(constants.ImagesCacheDir, strings.Replace(list[0].ID, "sha256:", "", -1)+".tar")
-		cmd := exec.Command("docker", "save", image, "-o", imageFile)
-		err = cmd.Run()
-		if err != nil {
-			log.Fatalf("failed to run %q: %s", strings.Join(cmd.Args, " "), err)
-		}
-	}
+		}*/
 	for _, file := range NodeArtifact {
 		mode := constants.Read
 		if file.Type == "executable" {
