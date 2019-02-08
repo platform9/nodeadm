@@ -35,22 +35,23 @@ func InstallMasterComponents(config *apis.InitConfiguration) {
 	if err := systemd.Start("kubelet.service"); err != nil {
 		log.Fatalf("Failed to install kubelet service: %v", err)
 	}
-	if config.VIPConfiguration.IP != "" {
-		if err := systemd.StopIfActive("keepalived.service"); err != nil {
-			log.Fatalf("Failed to install keepalived service: %v", err)
-		}
-		if err := systemd.DisableIfEnabled("keepalived.service"); err != nil {
-			log.Fatalf("Failed to install keepalived service: %v", err)
-		}
-		if err := writeKeepAlivedServiceFiles(config); err != nil {
-			log.Fatalf("Failed to configure keepalived: %v", err)
-		}
-		if err := systemd.Enable("keepalived.service"); err != nil {
-			log.Fatalf("Failed to install keepalived service: %v", err)
-		}
-		if err := systemd.Start("keepalived.service"); err != nil {
-			log.Fatalf("Failed to install keepalived service: %v", err)
-		}
+	if config.VIPConfiguration == nil {
+		return
+	}
+	if err := systemd.StopIfActive("keepalived.service"); err != nil {
+		log.Fatalf("Failed to install keepalived service: %v", err)
+	}
+	if err := systemd.DisableIfEnabled("keepalived.service"); err != nil {
+		log.Fatalf("Failed to install keepalived service: %v", err)
+	}
+	if err := writeKeepAlivedServiceFiles(config); err != nil {
+		log.Fatalf("Failed to configure keepalived: %v", err)
+	}
+	if err := systemd.Enable("keepalived.service"); err != nil {
+		log.Fatalf("Failed to install keepalived service: %v", err)
+	}
+	if err := systemd.Start("keepalived.service"); err != nil {
+		log.Fatalf("Failed to install keepalived service: %v", err)
 	}
 }
 
