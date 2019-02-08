@@ -28,7 +28,13 @@ func SetInitDynamicDefaults(config *InitConfiguration) error {
 	return nil
 }
 
+// setAPIBindPort sets the API BindPort, if it us not defined, to a default
+// value, because the port must be known to define the keepalived health check
+// script. If the VIP is not configured, setAPIBindPort does nothing.
 func setAPIBindPort(config *InitConfiguration) error {
+	if config.VIPConfiguration == nil {
+		return nil
+	}
 	p, err := gabs.Consume(config.MasterConfiguration)
 	if err != nil {
 		return fmt.Errorf("unable to parse kubeadm MasterConfiguration: %s", err)
