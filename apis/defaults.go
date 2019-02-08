@@ -51,7 +51,8 @@ func setAPIBindPort(config *InitConfiguration) error {
 }
 
 // setAPIControlPlaneEndpoint sets the API ControlPlaneEndpoint to the VIP IP,
-// // if the VIP IP is defined, but the ControlPlaneEndpoint is not.
+// if the VIP is configured. If the VIP is not configured,
+// setAPIControlPlaneEndpoint does nothing.
 func setAPIControlPlaneEndpoint(config *InitConfiguration) error {
 	if config.VIPConfiguration == nil {
 		return nil
@@ -71,6 +72,9 @@ func setAPIControlPlaneEndpoint(config *InitConfiguration) error {
 	return nil
 }
 
+// setKeepalivedInterface sets the interface, if it is not defined, to be used
+// by keepalived. If the VIP is not configured, setKeepalivedInterface does
+// nothing.
 func setKeepalivedInterface(config *InitConfiguration) error {
 	if config.VIPConfiguration == nil {
 		return nil
