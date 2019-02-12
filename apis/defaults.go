@@ -19,6 +19,7 @@ func SetInitDefaults(config *InitConfiguration) {
 	config.MasterConfiguration.APIVersion = "kubeadm.k8s.io/v1alpha1"
 	config.MasterConfiguration.KubernetesVersion = constants.KubernetesVersion
 	config.MasterConfiguration.NoTaintMaster = true
+	config.MasterConfiguration.Etcd.Endpoints = []string{"http://127.0.0.1:2379"}
 	addOrAppend(&config.MasterConfiguration.APIServerExtraArgs, "feature-gates", constants.FeatureGates)
 	addOrAppend(&config.MasterConfiguration.ControllerManagerExtraArgs, "feature-gates", constants.FeatureGates)
 	addOrAppend(&config.MasterConfiguration.SchedulerExtraArgs, "feature-gates", constants.FeatureGates)
