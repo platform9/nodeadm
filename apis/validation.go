@@ -102,7 +102,7 @@ func tokenDefined(config *JoinConfiguration) error {
 }
 
 // discoveryTokenCACertHashesDefined checks that
-// nodeConfiguration.discoveryTokenCACertHashes has at least non-empty item
+// nodeConfiguration.discoveryTokenCACertHashes has at least one non-empty item
 func discoveryTokenCACertHashesDefined(config *JoinConfiguration) error {
 	p, err := gabs.Consume(config.NodeConfiguration)
 	if err != nil {
