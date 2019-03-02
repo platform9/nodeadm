@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -33,6 +34,9 @@ var nodeCmdReset = &cobra.Command{
 func kubeadmReset() {
 	log.Infof("[nodeadm:reset] Invoking kubeadm reset")
 	cmd := exec.Command(filepath.Join(constants.BaseInstallDir, "kubeadm"), "reset", "--ignore-preflight-errors=all", "--force")
+	cmd.Env = append(os.Environ(),
+		fmt.Sprintf("PATH=%s:%s", constants.BaseInstallDir, os.Getenv("PATH")),
+	)
 	if err := executil.LogRun(cmd); err != nil {
 		log.Warnf("kubeadm reset failed, continuing: %v", err)
 	}
