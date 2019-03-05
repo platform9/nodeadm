@@ -18,15 +18,15 @@ nodeadm join --cfg /tmp/nodeadm.yaml --master 192.168.96.75:6443 --token bootstr
 
 ### Init
 ```
-networking:
-    podSubnet: 10.1.0.0/16
-    serviceSubnet: 172.1.0.0/24
-    dnsDomain: testcluster.local
 vipConfiguration:
   IP: 192.168.96.75
   RouterID: 42
   NetworkInterface: eth0
 masterConfiguration:
+  networking:
+    podSubnet: 10.1.0.0/16
+    serviceSubnet: 172.1.0.0/24
+    dnsDomain: testcluster.local
   api:
     advertiseAddress: 192.168.96.75
     bindPort: 443
