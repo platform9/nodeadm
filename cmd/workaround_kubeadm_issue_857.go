@@ -126,7 +126,7 @@ func isPatchedKubeProxyDaemonSet() (bool, error) {
 }
 
 func patchKubeProxyDaemonSet() error {
-	patchWithKubeProxyVersion := fmt.Sprintf(patchTemplate, fmt.Sprintf("k8s.gcr.io/kube-proxy-amd64:%s", constants.KubernetesVersion))
+	patchWithKubeProxyVersion := fmt.Sprintf(patchTemplate, fmt.Sprintf("k8s.gcr.io/kube-proxy:%s", constants.KubernetesVersion))
 	name := "/bin/sh"
 	arg := fmt.Sprintf("%s --kubeconfig=%s --namespace=kube-system patch --type=json daemonset kube-proxy --patch='%s'", filepath.Join(constants.BaseInstallDir, constants.KubectlFilename), constants.AdminKubeconfigFile, patchWithKubeProxyVersion)
 
