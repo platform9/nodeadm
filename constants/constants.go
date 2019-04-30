@@ -16,7 +16,6 @@ const (
 	CNIStateDir                           = "/var/lib/cni"
 	SystemdDir                            = "/etc/systemd/system"
 	FlannelVersion                        = "v0.10.0"
-	MetalLBVersion                        = "master"
 	DefaultPodNetwork                     = "10.244.0.0/16"
 	DefaultDNSIP                          = "10.96.0.10"
 	DefaultServiceSubnet                  = "10.96.0.0/12"
