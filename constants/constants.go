@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	KubernetesVersion                     = "v1.11.9"
+	KubernetesVersion                     = "v1.12.8"
 	CNIVersion                            = "v0.6.0"
 	BaseInstallDir                        = "/opt/bin"
 	CNIBaseDir                            = "/opt/cni/bin"
@@ -22,7 +22,7 @@ const (
 	DefaultDNSDomain                      = "cluster.local"
 	DefaultRouterID                       = 42
 	KubeadmConfig                         = "/tmp/kubeadm.yaml"
-	CoreDNSVersion                        = "1.1.3"
+	CoreDNSVersion                        = "1.2.2"
 	PauseContainerVersion                 = "3.1"
 	KeepalivedImage                       = "platform9/keepalived:v2.0.4"
 	CacheDir                              = "/var/cache/nodeadm/"
