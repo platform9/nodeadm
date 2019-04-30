@@ -15,8 +15,6 @@ var DOCKER_IMAGES = []string{
 	fmt.Sprintf("k8s.gcr.io/coredns:%s", constants.CoreDNSVersion),
 	fmt.Sprintf("quay.io/coreos/flannel:%s-amd64", constants.FlannelVersion),
 	fmt.Sprintf("k8s.gcr.io/pause:%s", constants.PauseContainerVersion),
-	fmt.Sprintf("metallb/speaker:%s", constants.MetalLBVersion),
-	fmt.Sprintf("metallb/controller:%s", constants.MetalLBVersion),
 }
 
 func GetImages() []string {
