@@ -102,6 +102,11 @@ func networkInit(config *apis.InitConfiguration) error {
 		log.Fatalf("failed to run %q: %s", strings.Join(cmd.Args, " "), err)
 	}
 
+	log.Infoln("Applying workaround for https://github.com/coreos/flannel/issues/1044")
+	if err := ensureFlannelDaemonSetToleratesAllNoScheduleTaints(); err != nil {
+		log.Fatalf("Failed to apply workaround: %v", err)
+	}
+
 	return nil
 }
 
