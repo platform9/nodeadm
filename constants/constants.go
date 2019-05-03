@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	KubernetesVersion                     = "v1.11.7"
+	KubernetesVersion                     = "v1.11.9"
 	CNIVersion                            = "v0.6.0"
 	BaseInstallDir                        = "/opt/bin"
 	CNIBaseDir                            = "/opt/cni/bin"

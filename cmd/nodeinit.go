@@ -107,6 +107,9 @@ func networkInit(config *apis.InitConfiguration) error {
 
 func kubeadmInit(config string) {
 	cmd := exec.Command(filepath.Join(constants.BaseInstallDir, "kubeadm"), "init", "--ignore-preflight-errors=all", "--config="+config)
+	cmd.Env = append(os.Environ(),
+		fmt.Sprintf("PATH=%s:%s", constants.BaseInstallDir, os.Getenv("PATH")),
+	)
 	err := executil.LogRun(cmd)
 	if err != nil {
 		log.Fatalf("failed to run %q: %s", strings.Join(cmd.Args, " "), err)

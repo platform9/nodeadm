@@ -51,6 +51,9 @@ var nodeCmdJoin = &cobra.Command{
 
 func kubeadmJoin() {
 	cmd := exec.Command(filepath.Join(constants.BaseInstallDir, "kubeadm"), "join", "--ignore-preflight-errors=all", fmt.Sprintf("--config=%s", constants.KubeadmConfig))
+	cmd.Env = append(os.Environ(),
+		fmt.Sprintf("PATH=%s:%s", constants.BaseInstallDir, os.Getenv("PATH")),
+	)
 	log.Infof("Running %q", strings.Join(cmd.Args, " "))
 	if err := executil.LogRun(cmd); err != nil {
 		log.Fatalf("%q failed: %s", strings.Join(cmd.Args, " "), err)
