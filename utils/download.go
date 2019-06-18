@@ -101,7 +101,7 @@ func PopulateCache() {
 		if err != nil {
 			log.Fatalf("Invalid source name %s: %v", srcImage, err)
 		}
-		destImage := "docker-archive://" + "/" + constants.ImagesCacheDir + imagebasename + ".tar"
+		destImage := "docker-archive://" + constants.ImagesCacheDir + "/" + imagebasename + ".tar"
 		destRef, err := alltransports.ParseImageName(destImage)
 		if err != nil {
 			log.Fatalf("Invalid destination name %s: %v", destImage, err)
