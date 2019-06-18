@@ -10,11 +10,11 @@ import (
 	"strings"
 
 	log "github.com/platform9/nodeadm/pkg/logrus"
-
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/platform9/nodeadm/constants"
+	"github.com/containers/image/signature"
+	"github.com/containers/image/copy"
+	"github.com/containers/image/transports/alltransports"	
 )
 
 type Artifact struct {
@@ -91,34 +91,30 @@ func PopulateCache() {
 	}
 	loadAvailableImages(cli)
 	for _, image := range GetImages() {
-		//first check if image is already in docker cache
-		nameFilter := filters.NewArgs()
-		nameFilter.Add("reference", image)
-		log.Infof("Checking if image %s is available in docker cache", image)
-		list, err := cli.ImageList(context.Background(), types.ImageListOptions{
-			Filters: nameFilter,
-		})
+		log.Infof("processing image : %s", image)
+		imagebasename := strings.Split(strings.Split(image, "/")[1], ":")[0]
+		log.Infof("imagebasename : %s", imagebasename)
+		policy, err := signature.DefaultPolicy(nil)
+		policyContext, err := signature.NewPolicyContext(policy)
+		srcImage := "docker://" + image
+		srcRef, err := alltransports.ParseImageName(srcImage)
 		if err != nil {
-			log.Fatalf("\nFailed to list images with error %v", err)
+			log.Fatalf("Invalid source name %s: %v", srcImage, err)
 		}
-		if len(list) == 0 {
-			log.Infof("Trying to pull image %s", image)
-			cmd := exec.Command("docker", "pull", image)
-			err = cmd.Run()
-			if err != nil {
-				log.Fatalf("failed to run %q: %s", strings.Join(cmd.Args, " "), err)
-			}
+		destImage := "docker-archive://" + constants.ImagesCacheDir + "/" + imagebasename + ".tar"
+		destRef, err := alltransports.ParseImageName(destImage)
+		if err != nil {
+			log.Fatalf("Invalid destination name %s: %v", destImage, err)
+		}
+		
+		defer policyContext.Destroy()
+		ctx := context.Background()
+		_, err = copy.Image(ctx, policyContext, destRef, srcRef, &copy.Options{})
 
-		}
-		list, err = cli.ImageList(context.Background(), types.ImageListOptions{
-			Filters: nameFilter,
-		})
-		imageFile := filepath.Join(constants.ImagesCacheDir, strings.Replace(list[0].ID, "sha256:", "", -1)+".tar")
-		cmd := exec.Command("docker", "save", image, "-o", imageFile)
-		err = cmd.Run()
 		if err != nil {
-			log.Fatalf("failed to run %q: %s", strings.Join(cmd.Args, " "), err)
+			log.Fatalf("failed to copy %s: %s", image, err)
 		}
+		
 	}
 	for _, file := range NodeArtifact {
 		mode := constants.Read
